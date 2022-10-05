@@ -1,0 +1,270 @@
+@import url('https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@100;300;400;500;700&display=swap');
+@import url(https://fonts.googleapis.com/css?family=Lato:400,700);
+
+body {
+  background: #fcfcfc;
+  display:flex;
+  justify-content:center;
+  align-items:center;
+  height: 100vh;
+  overflow: hidden;
+}
+.chat_wrapper {
+  height: 100vh;
+  .banner {
+    width: 450px;
+    position: relative;
+    img {
+      width: 100%;
+      transform: scale(.8);
+    }
+    .links {
+      position: absolute;
+      left: 0;
+      top: 0;
+      width: 100%;
+      height: 100%;
+      &:hover .github {
+        opacity: 1;
+      }
+      a.github {
+        opacity: 0;
+        transition: .1s;
+        background: #fcfcfc;
+        border-radius: 100%;
+        color: #000;
+        position: absolute;
+        font-size: 64pt;
+        &.first {
+          left: 130px;
+          bottom: 60px;
+        }
+        &.second {
+          left: 230px;
+          bottom: 60px;
+        }
+      }
+    }
+  }
+}
+.chat {
+  &.logged {
+    height: 80px;
+    animation: load_chat .4s ease-in forwards;
+  }
+  top: -40px;
+  font-family: "Lato", sans-serif;
+  width: 450px;
+  background: #f4f8f8;
+  box-shadow: 0 0 30px rgba(0, 0, 0, .1);
+  border-radius: 1px;
+  position: relative;
+  .login_wrapper {
+    background: #fff;
+    display: flex;
+    padding-bottom: 20px;
+    input {
+      width: 100%;
+      height: 60px;
+      box-sizing: border-box;
+      outline: none;
+      border: none;
+      padding: 10px 20px;
+      font-size: 16pt;
+    }
+    .connect_button {
+      flex-shrink: 0;
+      cursor: pointer;
+      display:flex;
+      justify-content:center;
+      align-items:center;
+      width: 80px;
+      height: 60px;
+      font-size: 18pt;
+      transition: .1s;
+      &[data-enabled="false"] {
+        color: #ccc;
+      }
+      &[data-enabled="true"] {
+        color: #111;
+      }
+    }
+  }
+  .messages_wrapper {
+    width: 100%;
+    height: 100%;
+    overflow: hidden;
+    .chatinfo {
+      width: 100%;
+      height: 80px;
+      background: #fff;
+      box-shadow: 0 0 10px rgba(0, 0, 0, .1);
+      .name, .members {
+        position: relative;
+        padding: 20px;
+        color: #444;
+        font-size: 12pt;
+        font-weight: 500;
+        padding-left: 80px;
+        padding-bottom: 0;
+      }
+      .members {
+        padding-top: 5px;
+        font-size: 8pt;
+        font-weight: 300;
+      }
+      .name:before {
+        content: '';
+        background: #ccc;
+        width: 50px;
+        height: 50px;
+        border-radius: 100%;
+        position: absolute;
+        left: 15px;
+        top: 15px;
+        background-color: #008080;
+      }
+    }
+    .messages {
+      width: 100%;
+      height: calc(100% - 140px);
+      overflow-y: auto;
+      display: flex;
+      flex-direction: column-reverse;
+      padding-bottom: 20px;
+      .message {
+        box-sizing: border-box;
+        flex-grow: 0;
+        flex-shrink: 0;
+        width: 100%;
+        padding: 10px 20px;
+        .info {
+          text-align: center;
+          font-size: 10pt;
+          padding: 10px;
+        }
+        .spacer {
+          border-bottom: 1px dashed #ccc;
+          padding-bottom: 10px;
+        }
+        .text {
+          transform-origin: bottom left;
+          animation: chat_message .2s forwards ease-in-out;
+          transform: scale(0);
+          .sender {
+            margin-bottom: 5px;
+            font-weight: 600;
+          }
+          word-break: break-word;
+          font-size: 10pt;
+          font-weight: 300;
+          width: max-content;
+          max-width: 60%;
+          padding: 10px 15px;
+          background: #fff;
+          border-radius: 10px;
+          box-shadow: 0 0 15px rgba(0, 0, 0, .05);
+          line-height: 1.4em;
+        }
+        &.income .text {
+          margin-left: auto;
+          transform-origin: bottom right;
+        }
+      }
+    }
+    .message_input {
+      display: flex;
+      background: #fff;
+      width: 100%;
+      height: 40px;
+      padding: 0 10px;
+      box-sizing: border-box;
+      input {
+        flex: 1;
+        border: 0;
+        width: 100%;
+        outline: 0;
+        padding: 10px 15px;
+        font-weight: 400;
+        font-size: 10pt;
+        color: #111;
+        font: 14px/20px "Lato", Arial, sans-serif;
+      }
+      .send_button, .emoji {
+        flex-shrink: 0;
+        width: 40px;
+        height: 40px;
+        display:flex;
+        justify-content:center;
+        align-items:center;
+        color: #333;
+        cursor: pointer;
+        user-select: none;
+        position: relative;
+        .checkbox {
+          position: absolute;
+          width: 100%;
+          height: 100%;
+          opacity: 0;
+        }
+        .emoji_wrapper {
+          &[data-enabled="true"] {
+            display: block;
+          }
+          &[data-enabled="false"] {
+            display: none;
+          }
+          position: absolute;
+          width: 200px;
+          height: 100px;
+          background: #ffffff;
+          border-radius: 5px;
+          box-shadow: 0 0 10px rgba(0, 0, 0, .1);
+          bottom: 40px;
+          left: 0;
+          overflow-y: auto;
+          //flex-wrap: wrap;
+          padding: 5px;
+          .emoji_item {
+            float: left;
+            width: 20px;
+            height: 20px;
+            margin: 3px;
+            cursor: pointer;
+            user-select: none;
+          }
+        }
+        &:before {
+          content: '';
+          left: 3px;
+          width: 35px;
+          height: 35px;
+          position: absolute;
+          background: #0001;
+          border-radius: 100%;
+          transition: .1s;
+          transform: scale(0);
+        }
+        &:hover:before {
+          transform: scale(1);
+        }
+      }
+    }
+  }
+}
+@keyframes chat_message {
+  0% {
+    transform: scale(0);
+  }
+  100% {
+    transform: scale(1);
+  }
+}
+@keyframes load_chat {
+  0% {
+    height: 80px;
+  }
+  100% {
+    height: 600px;
+  }
+}
