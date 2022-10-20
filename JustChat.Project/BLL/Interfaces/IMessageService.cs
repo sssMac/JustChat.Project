@@ -4,11 +4,11 @@ namespace BLL.Interfaces
 {
     public interface IMessageService
     {
-        public IEnumerable<Message> GetChatHistory();
-        public IEnumerable<Message> GetMessageHistory(string userName);
-        public Message GetMessageById(Guid id);
-        public Task<Message> AddMessage(Message message);
-        public Message UpdateMessage(Message message);
-        public bool DeleteMessage(Guid id);
+        public Task<IEnumerable<Message>> GetChatHistoryAsync();
+        public Task<IEnumerable<Message>> GetMessageHistoryAsync(string userName);
+        public Task<Message> GetMessageByIdAsync(Guid id);
+        public Task<Message> AddMessageAsync(Message message);
+        public Task<Message> UpdateMessageAsync(Message message);
+        public Task<bool> DeleteMessageAsync(Guid id);
     }
 }

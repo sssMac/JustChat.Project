@@ -26,7 +26,7 @@ namespace JustChat.API.MassTransit.Consumer
                 PublishDate = context.Message.PublishDate
             };
 
-            await _messageService.AddMessage(mesageData);
+            await _messageService.AddMessageAsync(mesageData);
         }
 
     }

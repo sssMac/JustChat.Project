@@ -1,0 +1,8 @@
+version: '3.4'
+
+services:
+  justchat.api:
+    image: ${DOCKER_REGISTRY-}justchatapi
+    build:
+      context: .
+      dockerfile: JustChat.API/Dockerfile

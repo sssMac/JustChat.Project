@@ -1,15 +1,16 @@
 ﻿using DAL.Entities;
-using MassTransit;
+using JustChat.BLL.Interfaces;
 using Microsoft.AspNetCore.SignalR;
 
-namespace JustChat.SignalR.Hubs
+namespace JustChat.API.Hubs
 {
     public class ChatHub : Hub
     {
-        private readonly IPublishEndpoint _publishEndpoint;
-        public ChatHub(IPublishEndpoint publishEndpoint)
+
+        private readonly IRabbitMQService _rabitMQService;
+        public ChatHub(IRabbitMQService rabitMQService)
         {
-            _publishEndpoint = publishEndpoint;
+            _rabitMQService = rabitMQService;
         }
 
         public async Task SendMessage(string userName, string inputText)
@@ -22,7 +23,7 @@ namespace JustChat.SignalR.Hubs
                 PublishDate = new DateTimeOffset(DateTime.UtcNow).ToUnixTimeSeconds()
             };
 
-            await _publishEndpoint.Publish<Message>(message);
+            _rabitMQService.SendMessage(message);
 
             await Clients.All.SendAsync("ReceiveMessage", message);
 

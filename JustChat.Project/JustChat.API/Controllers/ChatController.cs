@@ -1,5 +1,7 @@
-﻿using BLL.Interfaces;
+﻿using Amazon.S3.Model;
+using BLL.Interfaces;
 using DAL.Entities;
+using JustChat.BLL.Interfaces;
 using MassTransit;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
@@ -11,63 +13,49 @@ namespace JustChat.API.Controllers
     public class ChatController : ControllerBase
     {
         private readonly IMessageService _messageService;
-        //private readonly IRabbitMqService _rabitMqService;
-        private readonly IPublishEndpoint _publishEndpoint;
-        public ChatController(IMessageService messageService, IPublishEndpoint publishEndpoint)
+        private readonly IFileService _fileService;
+        public ChatController(IMessageService messageService, IFileService fileService)
         {
             _messageService = messageService;
-            _publishEndpoint = publishEndpoint;
+            _fileService = fileService;
         }
 
         [HttpGet("chathistory")]
-        public IEnumerable<Message> GetChatHistory()
+        public async Task<IEnumerable<Message>> GetChatHistory()
         {
-            var mesageList = _messageService.GetChatHistory();
-            return mesageList;
-        }
-
-        [HttpGet("messagehistory")]
-        public IEnumerable<Message> GetMessageHistory(string userName)
-        {
-            var userMesageList = _messageService.GetMessageHistory(userName);
-            return userMesageList;
-        }
-
-        [HttpGet("getmessagebyid")]
-        public Message GetMessageById(Guid id)
-        {
-            return _messageService.GetMessageById(id);
-        }
-
-        //[HttpPost("addmessage")]
-        //public async Task<Message> AddMessage(Message message)
-        //{
-        //    var mesageData = _messageService.AddMessage(new Message
-        //    {
-        //        MessageId = Guid.NewGuid(),
-        //        UserName = message.UserName,
-        //        Text = message.Text,
-        //        PublishDate = new DateTimeOffset(DateTime.UtcNow).ToUnixTimeSeconds()
-        //    });
-
-        //    await _publishEndpoint.Publish(message);
-        //    //_rabitMqService.SendMessage(mesageData);
-        //    return message;
-
-        //}
-
-        [IgnoreAntiforgeryToken]
-        [HttpPut("updatemessage")]
-        public Message UpdateMessage(Message message)
-        {
-            return _messageService.UpdateMessage(message);
+            return await _messageService.GetChatHistoryAsync();
         }
 
         [HttpDelete("deletemessage")]
-        public bool DeleteMessage(Guid id)
+        public async Task<bool> DeleteMessage(Guid id)
         {
-            return _messageService.DeleteMessage(id);
+            return await _messageService.DeleteMessageAsync(id);
         }
+
+
+        [HttpPost("createbucket")]
+        public async Task<IActionResult> CreateBucket(string name )
+        {
+            await _fileService.CreateBucketAsync(name);
+            return Ok("Bucket created!");
+        }
+
+        [HttpPost("uploadfile")]
+        public async Task<IActionResult> PostFile(string bucketName, IFormFile file )
+        {
+            var fileData = await _fileService.PostFileAsync(bucketName, file);
+
+            return Ok("File upload!");
+        }
+
+        [HttpGet("files")]
+        public async Task<List<S3Object>> GetFiles( string bucketName)
+        {
+            var file = await _fileService.GetAllFilesAsync(bucketName);
+            return file;
+        }
+
+
     }
 }
 

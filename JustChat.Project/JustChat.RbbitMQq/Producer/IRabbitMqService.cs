@@ -4,9 +4,9 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace JustChat.BLL.Interfaces
+namespace JustChat.RabbitMQ.Producer
 {
-    public interface IRabbitMQService
+    public interface IRabbitMqService
     {
         public bool SendMessage<T>(T message);
     }

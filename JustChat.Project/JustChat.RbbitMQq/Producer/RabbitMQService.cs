@@ -1,17 +1,16 @@
-﻿using JustChat.BLL.Interfaces;
-using Newtonsoft.Json;
+﻿using Newtonsoft.Json;
 using RabbitMQ.Client;
 using System.Text;
 
-namespace JustChat.BLL.Services
+namespace JustChat.RabbitMQ.Producer
 {
-    public class RabbitMQService : IRabbitMQService
+    public class RabbitMqService : IRabbitMqService
     {
+
         public bool SendMessage<T>(T message)
         {
             try
-            {
-                var factory = new ConnectionFactory() { HostName = "localhost" };
+            {var factory = new ConnectionFactory() { HostName = "localhost" };
                 using (var connection = factory.CreateConnection())
                 {
                     using (var channel = connection.CreateModel())
@@ -36,6 +35,8 @@ namespace JustChat.BLL.Services
                 Console.WriteLine($"{ex.Message} | {ex.StackTrace}");
                 return false;
             }
+
+
         }
     }
 }
