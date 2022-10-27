@@ -10,7 +10,13 @@ const Chat = () => {
     const [userName, setUserName] = useState<string>("")
     const [isLogin, setIsLogin] = useState(true)
     const latestChat = useRef(null);
+    const [file, setFile] = useState();
+    const [files, setFiles] = useState([]);
 
+    const saveFile = (e) => {
+        console.log(e.target.files[0]);
+        setFile(e.target.files[0]);
+    };
 
     const [chatHistory, setChatHistory] = useState([])
     latestChat.current = chatHistory;
@@ -22,9 +28,19 @@ const Chat = () => {
             );
             setChatHistory(result.data);
         };
-        fetchData();
-    }, []);
 
+        const fetchFiles = async() => {
+            const  result = await axios(
+                'https://localhost:7019/api/Chat/files?bucketName=justbucket' ,
+            );
+            console.log(result.data);
+            console.log("--------");
+
+            setFiles(result.data);
+        }
+        fetchData();
+        fetchFiles();
+    }, []);
     useEffect(() => {
         const connect = new HubConnectionBuilder()
             .withUrl("https://localhost:7019/hub")
@@ -59,6 +75,18 @@ const Chat = () => {
 
         console.log(chatHistory)
         setInputText("");
+    };
+
+    const sendFile = async (e) => {
+        console.log(file);
+        const formData = new FormData();
+        formData.append("file", file);
+        try {
+            const res = await axios.post('https://localhost:7019/api/Chat/uploadfile', formData);
+            console.log(res);
+        } catch (ex) {
+            console.log(ex);
+        }
     };
 
 
@@ -125,6 +153,10 @@ const Chat = () => {
                                                 </div>)
                                             }
                                         })}
+                                    {
+                                        files
+                                            .map((file) => <img key={file.eTag} src={'http://localhost:8000/justbucket/' + file.key} ></img> )
+                                    }
                                     <div className="message">
                                         <div className="info">You joined Support chat</div>
                                         <div className="spacer"></div>
@@ -143,6 +175,9 @@ const Chat = () => {
                                     />
                                     <div className="send_button" onClick={ sendMessage }><i
                                         className="fa-regular fa-paper-plane"></i></div>
+                                    <input type="file" onChange={saveFile} />
+                                    <div className="send_button" onClick={ sendFile }><i
+                                        className="fa-light fa-paperclip"></i></div>
                                 </div>
                             </div>
                         </div>

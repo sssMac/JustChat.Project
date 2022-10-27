@@ -9,7 +9,7 @@ namespace JustChat.BLL.Interfaces
 
         Task<List<S3Bucket>> GetAllBucketsAsync();
 
-        Task<MemoryStream> PostFileAsync( string bucketName, IFormFile file );
+        Task<MemoryStream> PostFileAsync( IFormFile file );
 
         Task<Stream> GetFileAsync( string bucketName, string fileKey );
 

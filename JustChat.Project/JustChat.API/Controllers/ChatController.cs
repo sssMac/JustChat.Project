@@ -41,9 +41,9 @@ namespace JustChat.API.Controllers
         }
 
         [HttpPost("uploadfile")]
-        public async Task<IActionResult> PostFile(string bucketName, IFormFile file )
+        public async Task<IActionResult> PostFile( IFormFile file )
         {
-            var fileData = await _fileService.PostFileAsync(bucketName, file);
+            var fileData = await _fileService.PostFileAsync(file);
 
             return Ok("File upload!");
         }
@@ -54,6 +54,14 @@ namespace JustChat.API.Controllers
             var file = await _fileService.GetAllFilesAsync(bucketName);
             return file;
         }
+
+        [HttpGet("buckets")]
+        public async Task<List<S3Bucket>> GetBuckets()
+        {
+            var bucket = await _fileService.GetAllBucketsAsync();
+            return bucket;
+        }
+
 
 
     }

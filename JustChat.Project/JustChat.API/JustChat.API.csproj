@@ -31,7 +31,6 @@
     <ProjectReference Include="..\BLL\JustChat.BLL.csproj" />
     <ProjectReference Include="..\DAL\JustChat.DAL.csproj" />
     <ProjectReference Include="..\JustChat.RabbitMQ\JustChat.RabbitMQ.csproj" />
-    <ProjectReference Include="..\JustChat.RbbitMQ\JustChat.RbbitMQq.csproj" />
   </ItemGroup>
 
 </Project>

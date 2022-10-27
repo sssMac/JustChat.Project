@@ -1,4 +1,5 @@
-﻿using Amazon.S3;
+﻿using Amazon;
+using Amazon.S3;
 using Amazon.S3.Model;
 using Amazon.S3.Transfer;
 using Amazon.S3.Util;
@@ -9,16 +10,28 @@ namespace JustChat.BLL.Services
 {
     public class FileService : IFileService
     {
-        private readonly IAmazonS3 _amazonS3;
-
+        private static IAmazonS3 _amazonS3;
+        private static readonly RegionEndpoint bucketRegion = RegionEndpoint.USWest2;
         public FileService(
             IAmazonS3 amazonS3)
         {
             _amazonS3 = amazonS3;
         }
 
+        private static async Task AddExampleLifecycleConfigAsync(IAmazonS3 client, LifecycleConfiguration configuration, string bucketName)
+        {
+
+            PutLifecycleConfigurationRequest request = new PutLifecycleConfigurationRequest
+            {
+                BucketName = bucketName,
+                Configuration = configuration
+            };
+            await client.PutLifecycleConfigurationAsync(request);
+        }
+
         public async Task CreateBucketAsync(string bucketName)
         {
+
             try
             {
                 if (!(await AmazonS3Util.DoesS3BucketExistAsync(_amazonS3, bucketName)))
@@ -31,7 +44,9 @@ namespace JustChat.BLL.Services
 
                     PutBucketResponse putBucketResponse = await _amazonS3.PutBucketAsync(putBucketRequest);
                 }
+
             }
+
             catch (AmazonS3Exception e)
             {
                 Console.WriteLine("Error encountered on server. Message:'{0}' when writing an object", e.Message);
@@ -64,8 +79,19 @@ namespace JustChat.BLL.Services
 
         }
 
-        public async Task<MemoryStream> PostFileAsync( string bucketName, IFormFile file )
+        public async Task<MemoryStream> PostFileAsync( IFormFile file )
         {
+            var bucketName = "justbucket";
+            if (!(await AmazonS3Util.DoesS3BucketExistAsync(_amazonS3, bucketName)))
+            {
+                var putBucketRequest = new PutBucketRequest
+                {
+                    BucketName = bucketName,
+                    UseClientRegion = true
+                };
+
+                PutBucketResponse putBucketResponse = await _amazonS3.PutBucketAsync(putBucketRequest);
+            }
             try
             {
                 await using var newMemoryStream = new MemoryStream();
