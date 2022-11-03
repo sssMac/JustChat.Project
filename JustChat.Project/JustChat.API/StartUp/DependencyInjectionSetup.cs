@@ -1,5 +1,6 @@
 ﻿using BLL.Interfaces;
 using BLL.Services;
+using MediatR;
 using DAL.Data;
 using JustChat.BLL.Interfaces;
 using JustChat.BLL.Services;
@@ -22,6 +23,8 @@ namespace JustChat.API.StartUp
             services.AwsConnect(config);
             services.AddEndpointsApiExplorer();
             services.AddSwaggerGen();
+            services.AddMediatR(typeof(MessageService).Assembly);
+
 
             return services;
         }
