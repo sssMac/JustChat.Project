@@ -6,6 +6,8 @@ using MediatR;
 var builder = WebApplication.CreateBuilder(args);
 
 builder.Services.RegisterService(builder.Configuration);
+builder.Services.RegisterMongoDB(builder.Configuration);
+builder.Services.RegisterRedisCache(builder.Configuration);
 builder.Services.AddEntityFrameworkNpgsql().AddDbContext<ApplicationContext>(options => options.UseNpgsql(
                     builder.Configuration["DefaultConnection"]));
 

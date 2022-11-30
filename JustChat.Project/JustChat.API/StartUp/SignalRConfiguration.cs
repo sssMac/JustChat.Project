@@ -8,9 +8,6 @@ namespace JustChat.API.StartUp
     {
         public static WebApplication ConfigureSignalR(this WebApplication app)
         {
-            GlobalHost.DependencyResolver.Register(
-                    typeof(ChatHub),
-                    () => new ChatHub(new RabbitMQService()));
 
             app.MapHub<ChatHub>("/hub");
             return app;

@@ -1,4 +1,6 @@
 ﻿using Amazon.S3.Model;
+using JustChat.DAL.Entities;
+using JustChat.DAL.ViewModel;
 using Microsoft.AspNetCore.Http;
 
 namespace JustChat.BLL.Interfaces
@@ -9,10 +11,10 @@ namespace JustChat.BLL.Interfaces
 
         Task<List<S3Bucket>> GetAllBucketsAsync();
 
-        Task<MemoryStream> PostFileAsync( IFormFile file );
+        Task<MetaFile> PostFileAsync( MessageRequest mess );
 
         Task<Stream> GetFileAsync( string bucketName, string fileKey );
 
-        Task<List<S3Object>> GetAllFilesAsync(string bucketName );
+        Task<List<MetaFile>> GetAllFilesAsync();
     }
 }

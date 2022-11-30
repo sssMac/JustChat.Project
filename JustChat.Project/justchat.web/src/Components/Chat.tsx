@@ -2,6 +2,8 @@ import {useEffect, useState, useRef} from 'react';
 import  './Chat.scss';
 import {HubConnection, HubConnectionBuilder} from "@microsoft/signalr";
 import axios from "axios";
+// @ts-ignore
+import uuid from 'react-uuid';
 
 const Chat = () => {
     const [connection, setConnection] = useState<null | HubConnection>(null);
@@ -12,9 +14,7 @@ const Chat = () => {
     const latestChat = useRef(null);
     const [file, setFile] = useState();
     const [files, setFiles] = useState([]);
-
     const saveFile = (e) => {
-        console.log(e.target.files[0]);
         setFile(e.target.files[0]);
     };
 
@@ -27,14 +27,13 @@ const Chat = () => {
                 'https://localhost:7019/api/Chat/chathistory',
             );
             setChatHistory(result.data);
+            console.log(result.data)
         };
 
         const fetchFiles = async() => {
             const  result = await axios(
                 'https://localhost:7019/api/Chat/files?bucketName=justbucket' ,
             );
-            console.log(result.data);
-            console.log("--------");
 
             setFiles(result.data);
         }
@@ -55,13 +54,14 @@ const Chat = () => {
             connection
                 .start()
                 .then(() => {
-                    connection.on("ReceiveMessage", (message) => {
+                    connection.on("SendMessage", (message) => {
+                        console.log("---------")
                         console.log(message)
+                        console.log("---------")
+
                         const updatedChat = [...latestChat.current];
                         updatedChat.push(message);
-
                         setChatHistory(updatedChat);
-                        console.log(message)
                     });
                 })
                 .catch((error) => console.log(error));
@@ -70,25 +70,21 @@ const Chat = () => {
 
     const sendMessage = async () => {
         if (connection){
-            console.log(`${userName} --- ${inputText}`)
-            await connection.send("SendMessage",userName, inputText );}
-
-        console.log(chatHistory)
+            const formData = new FormData();
+            formData.append("messageId", uuid());
+            formData.append("userName", userName);
+            formData.append("text", inputText);
+            // @ts-ignore
+            formData.append("publishDate", Math.floor(new Date().getTime() / 1000));
+            formData.append("image", file);
+            await axios.post(
+                `https://localhost:7019/api/Chat/postmessage`, formData
+            ).then(res => {
+                console.log(res)
+            })
+        }
         setInputText("");
     };
-
-    const sendFile = async (e) => {
-        console.log(file);
-        const formData = new FormData();
-        formData.append("file", file);
-        try {
-            const res = await axios.post('https://localhost:7019/api/Chat/uploadfile', formData);
-            console.log(res);
-        } catch (ex) {
-            console.log(ex);
-        }
-    };
-
 
     return (
         <div  className="Chat">
@@ -133,30 +129,25 @@ const Chat = () => {
                                 </div>
                                 <div className="messages">
                                     { chatHistory
-                                        .sort((a,b) => b.publishDate - a.publishDate)
+                                        .sort((a,b) => b.message.publishDate - a.message.publishDate)
                                         .map((chat) =>{
-                                            if(chat.userName === userName){
-                                                return (
-                                                    <div key={chat.messageId} className="message income">
-                                                        <div className="text">
-                                                            <div className="sender">{chat.userName}</div>
-                                                            <span>{chat.text}</span>
-                                                        </div>
-                                                    </div>
-                                                )}
-                                            else{
-                                                return  (<div key={chat.messageId} className="message">
+                                            return (
+                                                <div key={chat.message.messageId} className={chat.message.userName === userName ? "message income" : "message"}>
                                                     <div className="text">
-                                                        <div className="sender">{chat.userName}</div>
-                                                        <span>{chat.text}</span>
+                                                        <div className="sender">{chat.message.userName}</div>
+                                                        <span>{chat.message.text}</span>
+                                                        {
+                                                            chat.rsp !== null ?
+                                                                <div className="messageImg_container">
+                                                                    <img className="messageImg" key={chat.rsp.id} src={ 'http://localhost:8000/justbucket/' + chat.rsp.titile } ></img>
+                                                                </div>
+                                                                : false
+                                                        }
                                                     </div>
-                                                </div>)
-                                            }
+                                                </div>
+                                            )
                                         })}
-                                    {
-                                        files
-                                            .map((file) => <img key={file.eTag} src={'http://localhost:8000/justbucket/' + file.key} ></img> )
-                                    }
+
                                     <div className="message">
                                         <div className="info">You joined Support chat</div>
                                         <div className="spacer"></div>
@@ -176,8 +167,6 @@ const Chat = () => {
                                     <div className="send_button" onClick={ sendMessage }><i
                                         className="fa-regular fa-paper-plane"></i></div>
                                     <input type="file" onChange={saveFile} />
-                                    <div className="send_button" onClick={ sendFile }><i
-                                        className="fa-light fa-paperclip"></i></div>
                                 </div>
                             </div>
                         </div>
