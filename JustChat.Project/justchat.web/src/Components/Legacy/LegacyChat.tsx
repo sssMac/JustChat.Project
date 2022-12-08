@@ -5,69 +5,115 @@ import axios from "axios";
 // @ts-ignore
 import uuid from 'react-uuid';
 
-const Chat = () => {
+const LegacyChat = () => {
     const [connection, setConnection] = useState<null | HubConnection>(null);
 
     const [inputText, setInputText] = useState<string>("");
     const [userName, setUserName] = useState<string>("")
     const [isLogin, setIsLogin] = useState(true)
     const latestChat = useRef(null);
+    const latestUsers = useRef(null);
     const [file, setFile] = useState();
-    const [files, setFiles] = useState([]);
+    const [onlineUsers, setOnlineUsers] = useState([]);
     const saveFile = (e) => {
         setFile(e.target.files[0]);
     };
 
     const [chatHistory, setChatHistory] = useState([])
     latestChat.current = chatHistory;
+    latestUsers.current = onlineUsers;
 
     useEffect(() => {
         const fetchData = async () => {
             const result = await axios(
-                'https://localhost:7019/api/Chat/chathistory',
+                process.env.REACT_APP_URL + '/api/Chat/chathistory',
             );
             setChatHistory(result.data);
             console.log(result.data)
         };
 
-        const fetchFiles = async() => {
+        const fetchOnlineUsers = async() => {
             const  result = await axios(
-                'https://localhost:7019/api/Chat/files?bucketName=justbucket' ,
+                process.env.REACT_APP_URL + '/api/Chat/onlineusers' ,
             );
 
-            setFiles(result.data);
+            setOnlineUsers(result.data);
         }
+
         fetchData();
-        fetchFiles();
+        fetchOnlineUsers();
     }, []);
     useEffect(() => {
         const connect = new HubConnectionBuilder()
-            .withUrl("https://localhost:7019/hub")
+            .withUrl(process.env.REACT_APP_URL + "/hub")
             .withAutomaticReconnect()
             .build();
 
         setConnection(connect);
     }, []);
-
     useEffect(() => {
         if (connection) {
             connection
                 .start()
                 .then(() => {
-                    connection.on("SendMessage", (message) => {
-                        console.log("---------")
-                        console.log(message)
-                        console.log("---------")
+                    connection.on("ReceiveMessage", (message) => {
 
                         const updatedChat = [...latestChat.current];
                         updatedChat.push(message);
                         setChatHistory(updatedChat);
                     });
+
+                    connection.on("ReceiveJoinUser", (user) => {
+                        const updatedUserList = [...latestUsers.current];
+                        updatedUserList.push(user);
+                        setOnlineUsers(updatedUserList);
+                        console.log(user)
+
+                    });
+
+                    //connection.on("ReceiveLeaveUser", (user) => {
+                    //    const updatedUserList = [...latestUsers.current];
+                    //    updatedUserList.filter(function (ele){
+                    //        return ele !== user
+                    //    });
+                    //    setOnlineUsers(updatedUserList);
+                    //    console.log(onlineUsers)
+                    //});
                 })
                 .catch((error) => console.log(error));
         }
     }, [connection]);
 
+    function authHandler (state) {
+        if(state) {
+            setIsLogin(false)
+            try {
+                connection.invoke('JoinChat', userName).catch(err => console.error(err));
+
+            }
+            catch (err) {
+                alert(err);
+                console.log('Error while establishing connection: ' + { err })
+            }
+        }
+        else{
+            setIsLogin(true)
+            try {
+                connection.start().then(function () {
+                    connection.invoke('LeaveChat', userName).catch(err => console.error(err));
+                }).catch(function () {
+                    console.log("Error while connecting to hub");
+                });
+            }
+            catch (err) {
+                alert(err);
+                console.log('Error while establishing connection: ' + { err })
+            }
+        }
+
+
+
+    };
     const sendMessage = async () => {
         if (connection){
             const formData = new FormData();
@@ -101,7 +147,7 @@ const Chat = () => {
                         <div className="chat">
                             <div className="messages_wrapper">
                                 <div className="chatinfo">
-                                    <div className="name">Just Chat</div>
+                                    <div className="name">Just LegacyChat</div>
                                     <div className="members">Please enter your nickname...</div>
                                 </div>
                                 <div className="login_wrapper">
@@ -113,7 +159,7 @@ const Chat = () => {
                                     />
                                     <div className="connect_button" data-enabled="false"
                                          onClick={() => {
-                                             setIsLogin(false)
+                                             authHandler(true)
                                          }}>
                                         <i className="fa-solid fa-chevron-right"></i>
                                     </div>
@@ -124,7 +170,7 @@ const Chat = () => {
                         <div className="chat logged">
                             <div className="messages_wrapper">
                                 <div className="chatinfo">
-                                    <div className="name">Just Chat</div>
+                                    <div className="name">Just LegacyChat</div>
                                     <div className="members">Talk with random people...</div>
                                 </div>
                                 <div className="messages">
@@ -164,9 +210,12 @@ const Chat = () => {
                                         onChange={(e) => setInputText(e.target.value)}
                                         value={inputText}
                                     />
+                                    <label className="custom-file-upload">
+                                        <input type="file" onChange={saveFile} />
+                                        <i className={file === undefined ? "fa fa-cloud-upload" : "fa fa-cloud-upload green"} />
+                                    </label>
                                     <div className="send_button" onClick={ sendMessage }><i
                                         className="fa-regular fa-paper-plane"></i></div>
-                                    <input type="file" onChange={saveFile} />
                                 </div>
                             </div>
                         </div>
@@ -177,4 +226,4 @@ const Chat = () => {
     )
 };
 
-export default Chat;
+export default LegacyChat;
