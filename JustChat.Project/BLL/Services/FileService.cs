@@ -8,7 +8,10 @@ using JustChat.DAL.Entities;
 using JustChat.DAL.Models.Settings;
 using JustChat.DAL.ViewModel;
 using Microsoft.AspNetCore.Http;
+using Microsoft.Extensions.Caching.Distributed;
 using MongoDB.Driver;
+using System.Text;
+using System.Text.Json;
 
 namespace JustChat.BLL.Services
 {
@@ -17,26 +20,21 @@ namespace JustChat.BLL.Services
         private static IAmazonS3 _amazonS3;
         private IMongoCollection<MetaFile> _metaFiles;
         private static readonly RegionEndpoint bucketRegion = RegionEndpoint.USWest2;
+        private readonly IDistributedCache _cache;
+
         public FileService(
             IAmazonS3 amazonS3,
             IMongoDBSettings mongoDBSettings,
-            IMongoClient mongoClient)
+            IMongoClient mongoClient,
+            IDistributedCache cache)
         {
             _amazonS3 = amazonS3;
             var mongoDB = mongoClient.GetDatabase(mongoDBSettings.DatabaseName);
             _metaFiles = mongoDB.GetCollection<MetaFile>(mongoDBSettings.CollectionName);
+            _cache = cache;
         }
 
-        private static async Task AddExampleLifecycleConfigAsync(IAmazonS3 client, LifecycleConfiguration configuration, string bucketName)
-        {
 
-            PutLifecycleConfigurationRequest request = new PutLifecycleConfigurationRequest
-            {
-                BucketName = bucketName,
-                Configuration = configuration
-            };
-            await client.PutLifecycleConfigurationAsync(request);
-        }
 
         public async Task CreateBucketAsync(string bucketName)
         {
@@ -103,33 +101,111 @@ namespace JustChat.BLL.Services
             }
             try
             {
+                #region --- Temp Bucket ----
+                LifecycleConfiguration newConfiguration = new LifecycleConfiguration
+                {
+                    Rules = new List<LifecycleRule>
+                    {
+                        new LifecycleRule
+                        {
+                            Prefix = "Temp-",
+                            Expiration = new LifecycleRuleExpiration {  Days = 1 }
+                        },
+                    }
+                };
+                var tempBucketName = "tempbucket" + Guid.NewGuid().ToString();
+
+                var putTempBucketRequest = new PutBucketRequest
+                {
+                    BucketName = tempBucketName,
+                    UseClientRegion = true
+                };
+
+                PutBucketResponse putTempBucketResponse = await _amazonS3.PutBucketAsync(putTempBucketRequest);
+
+                var putLifecycleConfigurationTempBucketRequest = new PutLifecycleConfigurationRequest
+                {
+                    BucketName = tempBucketName,
+                    Configuration = newConfiguration,
+                };
+                await _amazonS3.PutLifecycleConfigurationAsync(putLifecycleConfigurationTempBucketRequest);
+
+                #endregion
+
                 var KEY = $"{Guid.NewGuid().ToString() + message.Image.FileName}";
                 await using var newMemoryStream = new MemoryStream();
+                await using var newTempMemoryStream = new MemoryStream();
                 await message.Image.CopyToAsync(newMemoryStream);
+                var checkCounter = 0;
+                var cacheKey = Guid.NewGuid().ToString();
 
-                var uploadRequest = new TransferUtilityUploadRequest
+                try
                 {
-                    InputStream = newMemoryStream,
-                    Key = KEY,
-                    BucketName = bucketName,
-                    CannedACL = S3CannedACL.PublicRead
-                };
+                    var uploadRequest = new TransferUtilityUploadRequest
+                    {
+                        InputStream = newTempMemoryStream,
+                        Key = KEY,
+                        BucketName = tempBucketName,
+                        CannedACL = S3CannedACL.PublicRead
+                    };
 
-                var fileTransferUtility = new TransferUtility(_amazonS3);
-                await fileTransferUtility.UploadAsync(uploadRequest);
-
-
-                var res = new MetaFile
+                    var fileTransferUtility = new TransferUtility(_amazonS3);
+                    await fileTransferUtility.UploadAsync(uploadRequest);
+                    checkCounter++;
+                }
+                catch (Exception)
                 {
-                    MessageId = message.MessageId,
-                    Titile = KEY,
-                    PublishDate = message.PublishDate,
-                    UserName = message.UserName,
-                };
+                    throw;
+                }
 
-                await _metaFiles.InsertOneAsync(res);
+                if(checkCounter == 1)
+                {
+                    var res = new MetaFile
+                    {
+                        MessageId = message.MessageId,
+                        Titile = KEY,
+                        PublishDate = message.PublishDate,
+                        UserName = message.UserName,
+                    };
 
-                return res;
+                    string cachedDataString = JsonSerializer.Serialize(res);
+                    var dataToCache = Encoding.UTF8.GetBytes(cachedDataString);
+
+                    DistributedCacheEntryOptions options = new DistributedCacheEntryOptions()
+                        .SetAbsoluteExpiration(DateTime.Now.AddMinutes(5))
+                        .SetSlidingExpiration(TimeSpan.FromMinutes(3));
+
+                    await _cache.SetAsync(cacheKey, dataToCache, options);
+                    checkCounter++;
+                }
+
+                if(checkCounter == 2)
+                {
+                    await _cache.RemoveAsync(cacheKey);
+                    await DeleteBucketAsync(_amazonS3, tempBucketName);
+
+                    var uploadRequest = new TransferUtilityUploadRequest
+                    {
+                        InputStream = newMemoryStream,
+                        Key = KEY,
+                        BucketName = bucketName,
+                        CannedACL = S3CannedACL.PublicRead
+                    };
+                    var res = new MetaFile
+                    {
+                        MessageId = message.MessageId,
+                        Titile = KEY,
+                        PublishDate = message.PublishDate,
+                        UserName = message.UserName,
+                    };
+                    var fileTransferUtility = new TransferUtility(_amazonS3);
+                    await fileTransferUtility.UploadAsync(uploadRequest);
+
+                    await _metaFiles.InsertOneAsync(res);
+                    return res;
+
+                }
+                return null;
 
             }
             catch (AmazonS3Exception e)
@@ -190,6 +266,42 @@ namespace JustChat.BLL.Services
             {
                 throw new Exception($"Error encountered on server. Message:'{e.Message}' when writing an object");
             }
+        }
+
+        public static async Task DeleteBucketAsync(IAmazonS3 client, string bucketName)
+        {
+            ListObjectsRequest listRequest = new ListObjectsRequest
+            {
+                BucketName = bucketName
+            };
+
+            ListObjectsResponse listResponse;
+            do
+            {
+                // Get a list of objects
+                listResponse = await client.ListObjectsAsync(listRequest);
+                foreach (S3Object obj in listResponse.S3Objects)
+                {
+                    // Delete each object
+                    await client.DeleteObjectAsync(new DeleteObjectRequest
+                    {
+                        BucketName = obj.BucketName,
+                        Key = obj.Key
+                    });
+                }
+
+                // Set the marker property
+                listRequest.Marker = listResponse.NextMarker;
+            } while (listResponse.IsTruncated);
+
+            // Construct DeleteBucket request
+            DeleteBucketRequest request = new DeleteBucketRequest
+            {
+                BucketName = bucketName
+            };
+
+            // Issue call
+            DeleteBucketResponse response = await client.DeleteBucketAsync(request);
         }
     }
 }

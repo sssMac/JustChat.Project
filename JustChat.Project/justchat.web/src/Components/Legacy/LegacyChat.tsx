@@ -1,4 +1,4 @@
-import {useEffect, useState, useRef} from 'react';
+/* import {useEffect, useState, useRef} from 'react';
 import  './Chat.scss';
 import {HubConnection, HubConnectionBuilder} from "@microsoft/signalr";
 import axios from "axios";
@@ -110,9 +110,6 @@ const LegacyChat = () => {
                 console.log('Error while establishing connection: ' + { err })
             }
         }
-
-
-
     };
     const sendMessage = async () => {
         if (connection){
@@ -226,4 +223,4 @@ const LegacyChat = () => {
     )
 };
 
-export default LegacyChat;
+export default LegacyChat; */

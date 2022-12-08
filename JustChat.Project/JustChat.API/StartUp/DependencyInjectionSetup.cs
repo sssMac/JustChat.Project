@@ -16,6 +16,7 @@ namespace JustChat.API.StartUp
             services.AddCors();
             services.AddSignalR();
             services.AddAntiforgery(o => o.HeaderName = "X-XSRF-TOKEN");
+            services.AddSingleton<IUsersManager, UsersManager>();
             services.AddTransient<IFileService, FileService>();
             services.AddTransient<IMessageService, MessageService>();
             services.AddTransient<IRabbitMQService, RabbitMQService>();

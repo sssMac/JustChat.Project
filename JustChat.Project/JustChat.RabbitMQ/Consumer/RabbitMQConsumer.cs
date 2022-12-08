@@ -1,9 +1,14 @@
 ﻿using BLL.Interfaces;
 using DAL.Entities;
 using Newtonsoft.Json;
-using System.Text;
 using RabbitMQ.Client;
 using RabbitMQ.Client.Events;
+using JustChat.DAL.ViewModel;
+using Microsoft.AspNetCore.SignalR;
+using JustChat.BLL.Hubs;
+using JustChat.DAL.Entities;
+using JustChat.BLL.Interfaces;
+using System.Text;
 
 namespace JustChat.RbbitMQ.Consumer
 {
@@ -13,16 +18,18 @@ namespace JustChat.RbbitMQ.Consumer
         private readonly IServiceScopeFactory _scopeFactory;
         private readonly ILogger _logger;
         private readonly IMessageService _messageService;
+        private readonly IFileService _fileService;
         private IConnection? _connection;
         private IModel? _channel;
         private string? _queueName;
+        private readonly IHubContext<ChatHub> _hubContext;
 
         public RabbitMQConsumer(ILoggerFactory loggerFactory, IServiceScopeFactory scopeFactory)
         {
             _logger = loggerFactory.CreateLogger<RabbitMQConsumer>();
             _scopeFactory = scopeFactory;
             _messageService = _scopeFactory.CreateScope().ServiceProvider.GetRequiredService<IMessageService>();
-
+            _hubContext = _scopeFactory.CreateScope().ServiceProvider.GetRequiredService<IHubContext<ChatHub>>();
             InitRabbitMQ();
         }
 
@@ -58,11 +65,34 @@ namespace JustChat.RbbitMQ.Consumer
                 var body = ea.Body;
                 var message = Encoding.UTF8.GetString(body.ToArray());
 
-                var mesageData = JsonConvert.DeserializeObject<Message>(message);
-                await _messageService.AddMessageAsync(mesageData);
+                var mesageData = JsonConvert.DeserializeObject<MessageRequest>(message);
+
+                //Message newMessage = new Message
+                //{
+                //    MessageId = mesageData.MessageId,
+                //    UserName = mesageData.UserName,
+                //    Text = mesageData.Text,
+                //    PublishDate = mesageData.PublishDate
+                //};
+
+                //await _messageService.AddMessageAsync(newMessage);
+
+                //var newFile = new MetaFile();
+                //if (mesageData.Image != null)
+                //{
+                //    newFile = await _fileService.PostFileAsync(mesageData);
+                //}
+
+                //var response = new MessageResponse
+                //{
+                //    message = newMessage,
+                //    rsp = mesageData.Image != null ? newFile : null
+
+                //};
+
+                //await _hubContext.Clients.All.SendAsync("SendMessage", response);
 
                 Console.WriteLine(ea.Body);
-                // handle the received message  
                 HandleMessage(message);
                 _channel.BasicAck(ea.DeliveryTag, false);
             };
