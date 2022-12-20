@@ -1,13 +1,11 @@
+using BLL.Interfaces;
+using BLL.Services;
+using JustChat.BLL.Interfaces;
+using JustChat.BLL.Services;
 using JustChat.RbbitMQ.Consumer;
 
-var builder = WebApplication.CreateBuilder(args);
+var host = Host
+    .CreateDefaultBuilder(args)
+    .Build();
 
-var app = builder.Build();
-
-app.UseHttpsRedirection();
-
-app.UseAuthorization();
-
-app.MapControllers();
-
-app.Run();
+await host.RunAsync();

@@ -14,5 +14,8 @@ namespace JustChat.BLL.Interfaces
         Task<string> GetUserId(string connectionId);
         Task<List<OnlineUser>> GetUsers();
         Task<OnlineUser> RemoveOnlineUser(string connectionId);
+        Task<bool> AddToGroup(string userName, string groupName);
+        Task<bool> RemoveFromGroup(string userName, string groupName);
+        Task<List<ChatGroup>> GetGroups(string userName);
     }
 }

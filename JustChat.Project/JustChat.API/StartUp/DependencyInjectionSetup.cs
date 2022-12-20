@@ -19,8 +19,8 @@ namespace JustChat.API.StartUp
             services.AddSingleton<IUsersManager, UsersManager>();
             services.AddTransient<IFileService, FileService>();
             services.AddTransient<IMessageService, MessageService>();
-            services.AddTransient<IRabbitMQService, RabbitMQService>();
-            services.AddHostedService<RabbitMQConsumer>();
+            //services.AddTransient<IRabbitMQService, RabbitMQService>();
+            //services.AddHostedService<RabbitMQConsumer>();
             services.AwsConnect(config);
             services.AddEndpointsApiExplorer();
             services.AddSwaggerGen();

@@ -10,7 +10,7 @@ WORKDIR /src
 COPY ["JustChat.API/JustChat.API.csproj", "JustChat.API/"]
 COPY ["DAL/JustChat.DAL.csproj", "DAL/"]
 COPY ["BLL/JustChat.BLL.csproj", "BLL/"]
-COPY ["JustChat.RbbitMQ/JustChat.RbbitMQ.csproj", "JustChat.RbbitMQ/"]
+COPY ["JustChat.RabbitMQ/JustChat.RabbitMQ.csproj", "JustChat.RabbitMQ/"]
 RUN dotnet restore "JustChat.API/JustChat.API.csproj"
 COPY . .
 WORKDIR "/src/JustChat.API"

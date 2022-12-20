@@ -8,7 +8,6 @@ namespace JustChat.BLL.Hubs
     public class ChatHub : Hub
     {
         private readonly IUsersManager _usersManager;
-
         public ChatHub(IUsersManager usersManager)
         {
             _usersManager = usersManager;
@@ -16,13 +15,32 @@ namespace JustChat.BLL.Hubs
 
         public override async Task OnDisconnectedAsync(Exception exception)
         {
-            await LeaveChat();
+            //await LeaveChat();
+            var user = await _usersManager.RemoveOnlineUser(Context.ConnectionId);
+            await Clients.All.SendAsync("ReceiveLeaveUser", user);
         }
 
-        public async Task JoinChat(string userName)
+        public async Task JoinChat(string userName, bool isAdmin)
         {
             var user = await _usersManager.AddOnlineUser(userName, Context.ConnectionId);
             await Clients.All.SendAsync("ReceiveJoinUser", user);
+
+        }
+
+        public async Task JoinRoom(string userName)
+        {
+            await Groups.AddToGroupAsync(Context.ConnectionId, userName);
+
+        }
+
+        public async Task LeaveRoom()
+        {
+            var groups = await _usersManager.GetUsers();
+             groups.ForEach(async v =>
+            {
+                await Groups.RemoveFromGroupAsync(Context.ConnectionId, v.Id);
+
+            });
 
         }
 
@@ -30,6 +48,13 @@ namespace JustChat.BLL.Hubs
         {
             var user = await _usersManager.RemoveOnlineUser(Context.ConnectionId);
             await Clients.All.SendAsync("ReceiveLeaveUser", user);
+
+        }
+
+        public async Task GetMySelf(string userName)
+        {
+            var user = (await _usersManager.GetUsers()).FirstOrDefault(u => u.Id == userName);
+            await Clients.Caller.SendAsync("ReceiveMyUser", user);
 
         }
 

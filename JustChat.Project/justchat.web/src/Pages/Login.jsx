@@ -7,8 +7,10 @@ const Login = (props) => {
     const routeChange = () =>{
         try {
             props.connection.start().then(() => {
-                props.connection.invoke('JoinChat', props.userName).catch(err => console.error(err));
+                props.connection.invoke('JoinChat', props.userName,props.isAdmin).catch(err => console.error(err));
+                props.connection.invoke('GetMySelf', props.userName).catch(err => console.error(err));
             })
+
         }
         catch (err) {
             navigate("/")
@@ -21,6 +23,10 @@ const Login = (props) => {
 
     return (
         <div className="login_wrapper">
+            <input type="checkbox"
+                   className="checkbox"
+                   checked={props.isAdmin}
+                   onChange={e => props.setIsAdmin(e.target.checked)} />
             <input
                 placeholder="Nickname"
                 className="username"

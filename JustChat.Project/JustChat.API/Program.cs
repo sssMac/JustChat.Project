@@ -9,8 +9,8 @@ builder.Services.RegisterService(builder.Configuration);
 builder.Services.RegisterMongoDB(builder.Configuration);
 builder.Services.RegisterRedisCache(builder.Configuration);
 builder.Services.RegisterSignalR();
-builder.Services.AddEntityFrameworkNpgsql().AddDbContext<ApplicationContext>(options => options.UseNpgsql(
-                    builder.Configuration["DefaultConnection"]));
+builder.Services.AddDbContext<ApplicationContext>(options => options.UseNpgsql(
+                    builder.Configuration["PostgreSQL:DefaultConnection"]));
 
 var app = builder.Build();
 

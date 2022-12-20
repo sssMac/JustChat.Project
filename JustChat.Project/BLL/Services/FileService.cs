@@ -17,13 +17,13 @@ namespace JustChat.BLL.Services
 {
     public class FileService : IFileService
     {
-        private static IAmazonS3 _amazonS3;
+        private static AmazonS3Client _amazonS3;
         private IMongoCollection<MetaFile> _metaFiles;
         private static readonly RegionEndpoint bucketRegion = RegionEndpoint.USWest2;
         private readonly IDistributedCache _cache;
 
         public FileService(
-            IAmazonS3 amazonS3,
+            AmazonS3Client amazonS3,
             IMongoDBSettings mongoDBSettings,
             IMongoClient mongoClient,
             IDistributedCache cache)

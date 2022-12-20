@@ -10,6 +10,23 @@ const SupportChat = (props) => {
     const [loading, setLoading] = useState();
     const [currentUser, setCurrentUser] = useState()
 
+
+    useEffect(() => {
+        if(!props.isAdmin){
+            props.connection.on("ReceiveMyUser", (user) => {
+                setCurrentUser(user)
+            });
+        }
+    }, [props.connection]);
+
+    useEffect(() => {
+        props.connection.invoke('LeaveRoom').catch(err => console.error(err));
+
+        if(currentUser){
+            props.connection.invoke('JoinRoom', currentUser.id).catch(err => console.error(err));
+        }
+    }, [currentUser]);
+
     if(!loading){
         return (
             <div className="main">
@@ -28,8 +45,12 @@ const SupportChat = (props) => {
                     </div>
                 </div>
                 <div className="container">
-                    <SideBar connection={props.connection} userName={props.userName} setCurrentUser={setCurrentUser}/>
-                    <Chat connection={props.connection} currentUser={currentUser} userName={props.userName}/>
+                    {
+                        props.isAdmin ? <SideBar connection={props.connection} userName={props.userName} setCurrentUser={setCurrentUser}/> : <div></div>
+                    }
+                    {
+                        currentUser ? <Chat connection={props.connection} currentUser={currentUser} userName={props.userName} isAdmin={props.isAdmin}/> : <div></div>
+                    }
                 </div>
             </div>
         );

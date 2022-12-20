@@ -11,10 +11,12 @@ namespace JustChat.BLL.Services
     public class UsersManager : IUsersManager
     {
         private List<OnlineUser> _onlineUsers;
+        private List<ChatGroup> _groups;
 
         public UsersManager()
         {
             _onlineUsers = new List<OnlineUser>();
+            _groups = new List<ChatGroup>();
         }
 
         public async Task<OnlineUser> AddOnlineUser(string userId, string connectionId)
@@ -72,6 +74,28 @@ namespace JustChat.BLL.Services
                 return _onlineUsers;
 
             });
+        }
+
+        public async Task<bool> AddToGroup(string userName, string groupName)
+        {
+            _groups.Add(new ChatGroup
+            {
+                Id = Guid.NewGuid(),
+                UserName = userName,
+                Group = groupName
+            });
+            return true;
+        }
+
+        public async Task<bool> RemoveFromGroup(string userName, string groupName)
+        {
+            _groups.Remove(_groups.FirstOrDefault(u => u.UserName == userName && u.Group == groupName));
+            return true;
+        }
+        public async Task<List<ChatGroup>> GetGroups(string userName)
+        {
+            return _groups.Where(u => u.UserName == userName).ToList();
+
         }
     }
 }

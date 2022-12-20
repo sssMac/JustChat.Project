@@ -1,13 +1,7 @@
-﻿using BLL.Interfaces;
-using DAL.Entities;
-using Newtonsoft.Json;
+﻿using Newtonsoft.Json;
 using RabbitMQ.Client;
 using RabbitMQ.Client.Events;
 using JustChat.DAL.ViewModel;
-using Microsoft.AspNetCore.SignalR;
-using JustChat.BLL.Hubs;
-using JustChat.DAL.Entities;
-using JustChat.BLL.Interfaces;
 using System.Text;
 
 namespace JustChat.RbbitMQ.Consumer
@@ -15,27 +9,35 @@ namespace JustChat.RbbitMQ.Consumer
     public class RabbitMQConsumer : BackgroundService
 
     {
-        private readonly IServiceScopeFactory _scopeFactory;
-        private readonly ILogger _logger;
-        private readonly IMessageService _messageService;
-        private readonly IFileService _fileService;
+        //private readonly ILogger _logger;
+        //private readonly IMessageService _messageService;
+        //private readonly IFileService _fileService;
+        private readonly IConfiguration _config;
         private IConnection? _connection;
         private IModel? _channel;
         private string? _queueName;
-        private readonly IHubContext<ChatHub> _hubContext;
 
-        public RabbitMQConsumer(ILoggerFactory loggerFactory, IServiceScopeFactory scopeFactory)
+        public RabbitMQConsumer(
+            IConfiguration config
+            //ILoggerFactory loggerFactory, 
+            //IMessageService messageService,
+            //IFileService fileService
+            )
         {
-            _logger = loggerFactory.CreateLogger<RabbitMQConsumer>();
-            _scopeFactory = scopeFactory;
-            _messageService = _scopeFactory.CreateScope().ServiceProvider.GetRequiredService<IMessageService>();
-            _hubContext = _scopeFactory.CreateScope().ServiceProvider.GetRequiredService<IHubContext<ChatHub>>();
+            //_logger = loggerFactory.CreateLogger<RabbitMQConsumer>();
+            //_messageService = messageService;
+            //_fileService = fileService;
+            _config = config;
             InitRabbitMQ();
         }
 
         private void InitRabbitMQ()
         {
-            var factory = new ConnectionFactory { HostName = "localhost" };
+            var factory = new ConnectionFactory
+            {
+                HostName = _config["RabbitMQ:Hostname"],
+                Port = Convert.ToInt32(_config["RabbitMQ:Port"]),
+            };
 
             // create connection  
             _connection = factory.CreateConnection();
@@ -110,7 +112,7 @@ namespace JustChat.RbbitMQ.Consumer
         private void HandleMessage(string content)
         {
             // we just print this message   
-            _logger.LogInformation($"consumer received {content}");
+            //_logger.LogInformation($"consumer received {content}");
         }
 
         private void OnConsumerConsumerCancelled(object sender, ConsumerEventArgs e) { }

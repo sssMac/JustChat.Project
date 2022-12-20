@@ -25,7 +25,7 @@ namespace JustChat.API.Controllers
         private readonly IFileService _fileService;
         private readonly IMediator _mediator;
         private readonly IHubContext<ChatHub> _hubContext;
-        private IRabbitMQService _rabbitMQService;
+        //private IRabbitMQService _rabbitMQService;
         private readonly IUsersManager _usersManager;
 
 
@@ -34,14 +34,14 @@ namespace JustChat.API.Controllers
             IFileService fileService,
             IMediator mediator,
             IHubContext<ChatHub> hubContext,
-            IRabbitMQService rabitMQService,
+            //IRabbitMQService rabitMQService,
             IUsersManager usersManager)
         {
             _messageService = messageService;
             _fileService = fileService;
             _mediator = mediator;
             _hubContext = hubContext;
-            _rabbitMQService = rabitMQService;
+            //_rabbitMQService = rabitMQService;
             _usersManager = usersManager;
         }
 
@@ -121,8 +121,7 @@ namespace JustChat.API.Controllers
             };
 
             await _hubContext.Clients.Client(receiver).SendAsync("ReceiveMessage", response);
-
-            //_rabbitMQService.SendMessage(mess);
+            await _hubContext.Clients.Group(mess.Whom).SendAsync("ReceiveGroupMessage", response);
 
             return Ok("Message send!");
         }

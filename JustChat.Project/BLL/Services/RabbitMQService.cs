@@ -1,4 +1,5 @@
 ﻿using JustChat.BLL.Interfaces;
+using Microsoft.Extensions.Configuration;
 using Newtonsoft.Json;
 using RabbitMQ.Client;
 using System.Text;
@@ -7,11 +8,22 @@ namespace JustChat.BLL.Services
 {
     public class RabbitMQService : IRabbitMQService
     {
+        private readonly IConfiguration _config;
+
+        public RabbitMQService(IConfiguration config)
+        {
+            _config = config;
+        }
+
         public bool SendMessage<T>(T message)
         {
             try
             {
-                var factory = new ConnectionFactory() { HostName = "localhost" };
+                var factory = new ConnectionFactory
+                {
+                    HostName = "localhost",
+                    Port = 5672,
+                };
                 using (var connection = factory.CreateConnection())
                 {
                     using (var channel = connection.CreateModel())

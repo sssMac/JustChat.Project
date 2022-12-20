@@ -23,9 +23,18 @@ const SideBar = (props) => {
                 const updatedUserList = [...latestUsers.current];
                 updatedUserList.push(user);
                 setUsers(updatedUserList);
-            });;
+            });
+
+            props.connection.on("ReceiveLeaveUser", (user) => {
+                console.log(user)
+                setUsers(current =>
+                    current.filter(u => {
+                        return u.id !== user.id;
+                    }))
+            });
         }
     }, [props.connection]);
+
 
 
     return (
