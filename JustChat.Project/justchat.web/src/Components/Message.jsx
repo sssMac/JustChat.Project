@@ -1,6 +1,7 @@
 import React from 'react';
 
 const Message = (props) => {
+    console.log(props.message.rsp)
     return (
         <div className={props.message.message.userName !== props.currentUser.id ? "message income" : "message"}>
         <div className="text">

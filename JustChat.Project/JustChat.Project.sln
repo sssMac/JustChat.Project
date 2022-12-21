@@ -13,8 +13,6 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "JustChat.BLL", "BLL\JustCha
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "JustChat.RabbitMQ", "JustChat.RabbitMQ\JustChat.RabbitMQ.csproj", "{19198128-B706-4D09-86D6-1AD80C400CAF}"
 EndProject
-Project("{E53339B2-1760-4266-BCC7-CA923CBCF16C}") = "docker-compose", "docker-compose.dcproj", "{90EBC649-FE4E-42E3-AA0B-59424958A3D0}"
-EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -43,10 +41,6 @@ Global
 		{19198128-B706-4D09-86D6-1AD80C400CAF}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{19198128-B706-4D09-86D6-1AD80C400CAF}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{19198128-B706-4D09-86D6-1AD80C400CAF}.Release|Any CPU.Build.0 = Release|Any CPU
-		{90EBC649-FE4E-42E3-AA0B-59424958A3D0}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{90EBC649-FE4E-42E3-AA0B-59424958A3D0}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{90EBC649-FE4E-42E3-AA0B-59424958A3D0}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{90EBC649-FE4E-42E3-AA0B-59424958A3D0}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

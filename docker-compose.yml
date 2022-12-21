@@ -3,7 +3,7 @@ version: '3.4'
 services:
   justchat.api:
     build: 
-      context: .
+      context: JustChat.Project
       dockerfile: JustChat.API/Dockerfile
     ports:
       - "5225:80"
@@ -29,12 +29,39 @@ services:
       - minio
       - mongodb
 
+  netflex.web:
+    build:
+      context: NetFlex-WebProject
+      dockerfile: NetFlex.WEB/Dockerfile
+    ports:
+      - "5224:80"
+    environment:
+      - ASPNETCORE_ENVIRONMENT=Development
+      - ConnectionStrings__DefaultConnection=Host=postgre-netflex;Port=5432;Database=NetFlex.DB;Username=postgres;Password=russiamedved
+    depends_on:
+      - postgre-netflex
+    command: ["dotnet", "ef", "database update"]
+
+
   mongodb:
     image : mongo:4.4.6
     container_name: mongodb
     ports:
     - 27017:27017
     restart: unless-stopped
+
+  postgre-netflex:
+    image: postgres:14.1-alpine
+    restart: always
+    environment:
+      POSTGRES_USER: "postgres"
+      POSTGRES_PASSWORD: "russiamedved"
+      POSTGRES_DB: "NetFlex.DB"
+    ports:
+      - '7001:5432'
+    volumes:
+      - postgre-netflex:/var/lib/postgresql/data
+      - ./postgre-netflex/init.sql:/docker-entrypoint-initdb.d/create_tables.sql
 
   postgre:
     image: postgres:14.1-alpine
@@ -51,7 +78,7 @@ services:
 
   ui:
     build: 
-      context: /justchat.web
+      context: JustChat.Project/justchat.web
       dockerfile: Dockerfile
     container_name: justchat_ui
     restart: on-failure
@@ -92,7 +119,7 @@ services:
 
   mqconsumer:
     build:
-      context: .
+      context: JustChat.Project
       dockerfile: JustChat.RabbitMQ/Dockerfile
     environment:
       - RabbitMQ__Hostname=rabbitmq
@@ -120,6 +147,8 @@ services:
 
 volumes:
   postgre:
+    driver: local
+  postgre-netflex:
     driver: local
   rabbitmq:
     driver: local

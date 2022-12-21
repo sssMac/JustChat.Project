@@ -14,7 +14,6 @@ function App() {
             .withAutomaticReconnect()
             .build();
 
-
         setConnection(connect);
     }, []);
 

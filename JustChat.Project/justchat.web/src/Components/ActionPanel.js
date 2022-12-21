@@ -4,7 +4,7 @@ import uuid from 'react-uuid';
 
 const ActionPanel = (props) => {
     const [inputText, setInputText] = useState("");
-    const [file, setFile] = useState();
+    const [file, setFile] = useState(null);
 
     const saveFile = (e) => {
         setFile(e.target.files[0]);
@@ -26,6 +26,7 @@ const ActionPanel = (props) => {
             console.log(res)
         })
         setInputText("");
+        setFile(null)
 
     };
 
@@ -36,14 +37,23 @@ const ActionPanel = (props) => {
                    onChange={(e) => setInputText(e.target.value)}
                    value={inputText}
             />
-            <div className="button">
-                <input className="file"
-                       type="file"
-                       onChange={saveFile}
-                />
-                <i className="fa-solid fa-paperclip"></i>
-            </div>
-            <div className="button" onClick={ sendMessage }>
+            {
+                file === null ? (
+                    <div className="button">
+                        <input className="file"
+                               type="file"
+                               onChange={saveFile}
+                        />
+                        <i className="fa-solid fa-paperclip"></i>
+                    </div>
+                ) : (
+                    <div className="button green">
+                        <a className="file" onClick={() => setFile(null)}></a>
+                        <i className="fa-solid fa-xmark"></i>
+                    </div>
+                )
+            }
+            <div className={"button"} onClick={ sendMessage }>
                 <i className="fa-regular fa-paper-plane"></i>
             </div>
         </div>
