@@ -7,6 +7,7 @@ using NetFlex.DAL.Interfaces;
 using NetFlex.DAL.Repositories;
 using NetFlex.DAL.Constants;
 using Microsoft.AspNetCore.Mvc;
+using GraphQL.AspNet.Configuration;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -14,7 +15,7 @@ var builder = WebApplication.CreateBuilder(args);
 builder.Services.AddDbContext<DatabaseContext>(options => options.UseNpgsql(
                     builder.Configuration["ConnectionStrings:DefaultConnection"]));
 
-
+builder.Services.AddGraphQL();
 builder.Services.AddIdentity<ApplicationUser, IdentityRole>(options =>
 {
     options.User.RequireUniqueEmail = true;    // уникальный email
@@ -80,7 +81,7 @@ if (!app.Environment.IsDevelopment())
     // The default HSTS value is 30 days. You may want to change this for production scenarios, see https://aka.ms/aspnetcore-hsts.
     app.UseHsts();
 }
-
+app.UseGraphQL();
 app.Use(async (context, next) =>
 {
     await next();
@@ -103,12 +104,12 @@ app.UseRouting();
 app.UseAuthentication();
 app.UseAuthorization();
 
-using (var serviceScope = app.Services.CreateScope())
-{
-    var services = serviceScope.ServiceProvider;
-    var context = services.GetRequiredService<DatabaseContext>();
-    context.Database.Migrate();
-}
+//using (var serviceScope = app.Services.CreateScope())
+//{
+//    var services = serviceScope.ServiceProvider;
+//    var context = services.GetRequiredService<DatabaseContext>();
+//    context.Database.Migrate();
+//}
 
 
 app.MapControllerRoute(

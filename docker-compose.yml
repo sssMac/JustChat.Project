@@ -1,5 +1,14 @@
 version: '3.4'
 
+networks:
+  hfnet:
+    driver: bridge
+    ipam:
+      driver: default
+      config:
+        - subnet: 192.168.55.0/24
+          gateway: 192.168.55.1
+
 services:
   justchat.api:
     build: 
@@ -33,6 +42,9 @@ services:
     build:
       context: NetFlex-WebProject
       dockerfile: NetFlex.WEB/Dockerfile
+    networks:
+      hfnet:
+        ipv4_address: 192.168.55.10
     ports:
       - "5224:80"
     environment:
