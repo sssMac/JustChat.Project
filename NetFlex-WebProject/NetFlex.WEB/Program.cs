@@ -19,7 +19,9 @@ builder.Services.AddGraphQL();
 builder.Services.AddIdentity<ApplicationUser, IdentityRole>(options =>
 {
     options.User.RequireUniqueEmail = true;    // уникальный email
-    options.SignIn.RequireConfirmedAccount = true;
+    options.SignIn.RequireConfirmedAccount = false;
+    options.Password.RequireNonAlphanumeric = false;
+    options.Password.RequireUppercase = false;
 
 })
     .AddEntityFrameworkStores<DatabaseContext>()
@@ -71,7 +73,6 @@ builder.Services.AddAuthorization(options =>
 });
 
 builder.Services.AddControllersWithViews();
-
 var app = builder.Build();
 
 // Configure the HTTP request pipeline.
@@ -104,12 +105,12 @@ app.UseRouting();
 app.UseAuthentication();
 app.UseAuthorization();
 
-using (var serviceScope = app.Services.CreateScope())
-{
-    var services = serviceScope.ServiceProvider;
-    var context = services.GetRequiredService<DatabaseContext>();
-    context.Database.Migrate();
-}
+//using (var serviceScope = app.Services.CreateScope())
+//{
+//    var services = serviceScope.ServiceProvider;
+//    var context = services.GetRequiredService<DatabaseContext>();
+//    context.Database.Migrate();
+//}
 
 
 app.MapControllerRoute(

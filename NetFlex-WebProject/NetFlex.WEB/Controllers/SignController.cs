@@ -26,62 +26,38 @@ namespace NetFlex.WEB.Controllers
         public AuthController(SignInManager<ApplicationUser> signInManager,
             UserManager<ApplicationUser> userManager,
             IUserStore<ApplicationUser> userStore,
-            IUserEmailStore<ApplicationUser> emailStore,
             ILogger<AuthController> logger,
             IEmailSender emailSender)
         {
             _signInManager = signInManager;
             _userManager = userManager;
             _userStore = userStore;
-            _emailStore = emailStore;
+            _emailStore = GetEmailStore();
             _logger = logger;
             _emailSender = emailSender;
         }
 
-        [BindProperty]
-        public InputModel Input { get; set; }
-        public string ReturnUrl { get; set; }
-        public IList<AuthenticationScheme> ExternalLogins { get; set; }
-        public class InputModel
-        {
-
-            [Required]
-            [EmailAddress]
-            [Display(Name = "Email")]
-            public string Email { get; set; }
-
-            [Required]
-            [StringLength(100, ErrorMessage = "The {0} must be at least {2} and at max {1} characters long.", MinimumLength = 6)]
-            [DataType(DataType.Password)]
-            [Display(Name = "Password")]
-            public string Password { get; set; }
-
-            [DataType(DataType.Password)]
-            [Display(Name = "Confirm password")]
-            [Compare("Password", ErrorMessage = "The password and confirmation password do not match.")]
-            public string ConfirmPassword { get; set; }
-        }
 
 
         [HttpGet("registration")]
         public async Task<IActionResult> Register(string email, string password, string confirmPassword)
         {
-            if (ModelState.IsValid)
+            if (password != confirmPassword)
             {
-                var user = CreateUser();
+                return BadRequest("ConfirmPassword is incorrect!");
 
-                await _userStore.SetUserNameAsync(user, Input.Email, CancellationToken.None);
-                await _emailStore.SetEmailAsync(user, Input.Email, CancellationToken.None);
-                var result = await _userManager.CreateAsync(user, Input.Password);
+            }
+            var user = CreateUser();
 
-                if (result.Succeeded)
-                {
-                    _logger.LogInformation("User created a new account with password.");
+            await _userStore.SetUserNameAsync(user, email, CancellationToken.None);
+            await _emailStore.SetEmailAsync(user, email, CancellationToken.None);
+            var result = await _userManager.CreateAsync(user, password);
 
-                    return Ok("User created!");
-                }
-                return BadRequest("User no created!");
+            if (result.Succeeded)
+            {
+                _logger.LogInformation("User created a new account with password.");
 
+                return Ok("User created!");
             }
             return BadRequest("User no created!");
 
@@ -91,20 +67,16 @@ namespace NetFlex.WEB.Controllers
         public async Task<IActionResult> Login(string email, string password)
         {
 
-            if (ModelState.IsValid)
+            var user = await _signInManager.UserManager.FindByNameAsync(email);
+            if (user == null)
             {
-                var user = await _signInManager.UserManager.FindByNameAsync(Input.Email);
-                if (user == null)
-                {
-                    return BadRequest("User not found!");
-                }
+                return BadRequest("User not found!");
+            }
 
-                var result = await _signInManager.CheckPasswordSignInAsync(user, Input.Password, false);
-                if (result.Succeeded)
-                {
-                    return Ok("User is logged in!");
-                }
-               
+            var result = await _signInManager.CheckPasswordSignInAsync(user, password, false);
+            if (result.Succeeded)
+            {
+                return Ok("User is logged in!");
             }
             return BadRequest("Bad creditionals!!");
         }
