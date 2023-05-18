@@ -104,12 +104,12 @@ app.UseRouting();
 app.UseAuthentication();
 app.UseAuthorization();
 
-//using (var serviceScope = app.Services.CreateScope())
-//{
-//    var services = serviceScope.ServiceProvider;
-//    var context = services.GetRequiredService<DatabaseContext>();
-//    context.Database.Migrate();
-//}
+using (var serviceScope = app.Services.CreateScope())
+{
+    var services = serviceScope.ServiceProvider;
+    var context = services.GetRequiredService<DatabaseContext>();
+    context.Database.Migrate();
+}
 
 
 app.MapControllerRoute(
