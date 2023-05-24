@@ -1,112 +1,106 @@
 ﻿using Grpc.Core;
 using System.Collections.Concurrent;
 using ChatServerApp.Protos;
+using BLL.Interfaces;
+using DAL.Entities;
+using JustChat.DAL.ViewModel;
+using JustChat.BLL.Hubs;
+using Microsoft.AspNetCore.SignalR;
 
 namespace JustChat.API.Services
 {
     public class ChatService : ChatServer.ChatServerBase
     {
-        private static readonly Dictionary<string, List<IServerStreamWriter<ChatMessage>>> channels =
-    new Dictionary<string, List<IServerStreamWriter<ChatMessage>>>();
+        private ChatControll _chatControll;
+        private readonly IMessageService _messageService;
+        private readonly IHubContext<ChatHub> _hubContext;
+        public ChatService(ChatControll chatControll, IMessageService messageService, IHubContext<ChatHub> hubContext)
+        {
+            _chatControll = chatControll;
+            _messageService = messageService;
+            _hubContext = hubContext;
+        }
 
         public override async Task<JoinChannelResponse> JoinChannel(JoinChannelRequest request, ServerCallContext context)
         {
-            Console.WriteLine($"{request.Username} connected to {request.Channel} channel!");
-            string channel = request.Channel;
+            var userName = request.Username;
 
-            if (!channels.ContainsKey(channel))
+            var user = new User
             {
-                channels[channel] = new List<IServerStreamWriter<ChatMessage>>();
-            }
+                UserName = userName
+            };
 
-            channels[channel].Add(new ChatStreamWriter(context));
+            var connected = await _chatControll.TryConnectUserAsync(user);
 
-            return new JoinChannelResponse { Success = true };
+            return new JoinChannelResponse
+            {
+                Success = true
+            };
         }
 
-        public override async Task<LeaveChannelResponse> LeaveChannel(LeaveChannelRequest request, ServerCallContext context)
-        {
-            string channel = request.Channel;
-
-            if (channels.ContainsKey(channel))
-            {
-                channels[channel].Remove(new ChatStreamWriter(context));
-
-                if (channels[channel].Count == 0)
-                {
-                    channels.Remove(channel);
-                }
-            }
-
-            return new LeaveChannelResponse { Success = true };
-        }
 
         public override async Task<SendMessageResponse> SendMessage(SendMessageRequest request, ServerCallContext context)
         {
-            string channel = request.Channel;
-            string message = request.Message;
-            string username = request.Username;
+            var userName = request.Username;
+            var user = await _chatControll.GetUserByNameAsync(userName);
 
-            if (!channels.ContainsKey(channel))
+            Message newMessage = new Message
             {
-                return new SendMessageResponse { Success = false };
-            }
+                MessageId = Guid.NewGuid(),
+                UserName = request.Username,
+                Whom = request.Username,
+                Text = request.Message,
+                PublishDate = DateTime.UtcNow.Millisecond
+            };
 
-            foreach (var streamWriter in channels[channel])
+            var response = new MessageResponse
             {
-                await streamWriter.WriteAsync(new ChatMessage { Channel = channel, Username = username, Message = message });
-            }
+                message = newMessage,
+                rsp =  null
+            };
+
+            await _messageService.AddMessageAsync(newMessage);
+            await _chatControll.SaveMessageToUsersAsync(user, request.Message);
+
+            await _hubContext.Clients.Group(request.Username).SendAsync("ReceiveGroupMessage", response);
 
             return new SendMessageResponse { Success = true };
         }
 
+       
+
+        public override async Task<LeaveChannelResponse> LeaveChannel(LeaveChannelRequest request, ServerCallContext context)
+        {
+
+            Console.WriteLine($"{request.Username} leave from {request.Channel} channel!");
+            return new LeaveChannelResponse { Success = true };
+        }
+
+        
+
         public override async Task ChatStream(StreamRequest request, IServerStreamWriter<ChatMessage> responseStream, ServerCallContext context)
         {
-            string channel = request.Channel;
-            string username = request.Username;
+            var userName = request.Username;
+            var user = await _chatControll.GetUserByNameAsync(userName);
 
-            if (!channels.ContainsKey(channel))
-            {
-                return;
-            }
+            await _chatControll.SubscribeToReceiveMessages(user, responseStream);
 
-            var streamWriter = new ChatStreamWriter(context, responseStream);
-            channels[channel].Add(streamWriter);
-
-            await Task.Delay(-1, context.CancellationToken);
-
-            channels[channel].Remove(streamWriter);
-
-            if (channels[channel].Count == 0)
-            {
-                channels.Remove(channel);
-            }
-        }
-    }
-
-    public class ChatStreamWriter : IServerStreamWriter<ChatMessage>
-    {
-        private ServerCallContext context;
-        private IServerStreamWriter<ChatMessage> responseStream;
-
-        public ChatStreamWriter(ServerCallContext context, IServerStreamWriter<ChatMessage> responseStream = null)
-        {
-            this.context = context;
-            this.responseStream = responseStream;
-        }
-
-        public WriteOptions? WriteOptions { get => throw new NotImplementedException(); set => throw new NotImplementedException(); }
-
-        public async Task WriteAsync(ChatMessage message)
-        {
             try
             {
-                await responseStream.WriteAsync(message);
+                while (!context.CancellationToken.IsCancellationRequested)
+                {
+                    await _chatControll.BroadcastMessagesAsync(user, context.CancellationToken);
+                    await Task.Delay(1000);
+                }
             }
-            catch (Exception ex)
+            catch (OperationCanceledException)
             {
-                Console.WriteLine($"Error writing message: {ex}");
             }
+            finally
+            {
+                await _chatControll.DisconnectUserAsync(user, responseStream);
+            }
+
         }
     }
 }

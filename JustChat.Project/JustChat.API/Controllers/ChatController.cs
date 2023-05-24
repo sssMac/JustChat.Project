@@ -14,6 +14,7 @@ using Microsoft.Extensions.Caching.Distributed;
 using System.Text;
 using System.Text.Json;
 using Microsoft.AspNetCore.SignalR;
+using JustChat.API.Services;
 
 namespace JustChat.API.Controllers
 {
@@ -25,6 +26,7 @@ namespace JustChat.API.Controllers
         private readonly IFileService _fileService;
         private readonly IMediator _mediator;
         private readonly IHubContext<ChatHub> _hubContext;
+        private ChatControll _chatControll;
         //private IRabbitMQService _rabbitMQService;
         private readonly IUsersManager _usersManager;
 
@@ -35,7 +37,8 @@ namespace JustChat.API.Controllers
             IMediator mediator,
             IHubContext<ChatHub> hubContext,
             //IRabbitMQService rabitMQService,
-            IUsersManager usersManager)
+            IUsersManager usersManager,
+            ChatControll chatControll)
         {
             _messageService = messageService;
             _fileService = fileService;
@@ -43,6 +46,7 @@ namespace JustChat.API.Controllers
             _hubContext = hubContext;
             //_rabbitMQService = rabitMQService;
             _usersManager = usersManager;
+            _chatControll = chatControll;
         }
 
         [HttpGet("chathistory")]
@@ -119,6 +123,9 @@ namespace JustChat.API.Controllers
                 rsp = mess.Image != null ? newFile : null
 
             };
+
+            var user = await _chatControll.GetUserByNameAsync(mess.Whom);
+            await _chatControll.SaveMessageToUsersAsync(user, mess.Text);
 
             await _hubContext.Clients.Client(receiver).SendAsync("ReceiveMessage", response);
             await _hubContext.Clients.Group(mess.Whom).SendAsync("ReceiveGroupMessage", response);

@@ -5,6 +5,7 @@ using DAL.Data;
 using JustChat.BLL.Interfaces;
 using JustChat.BLL.Services;
 using JustChat.RbbitMQ.Consumer;
+using JustChat.API.Services;
 
 namespace JustChat.API.StartUp
 {
@@ -19,6 +20,7 @@ namespace JustChat.API.StartUp
             services.AddSingleton<IUsersManager, UsersManager>();
             services.AddTransient<IFileService, FileService>();
             services.AddTransient<IMessageService, MessageService>();
+            services.AddSingleton<ChatControll>();
             //services.AddTransient<IRabbitMQService, RabbitMQService>();
             //services.AddHostedService<RabbitMQConsumer>();
             services.AwsConnect(config);
