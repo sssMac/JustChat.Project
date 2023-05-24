@@ -7,7 +7,7 @@ services:
       dockerfile: JustChat.API/Dockerfile
     ports:
       - "5225:80"
-      
+
     environment:
       - ASPNETCORE_ENVIRONMENT=Development
 
@@ -72,7 +72,7 @@ services:
       POSTGRES_PASSWORD: "russiamedved"
       POSTGRES_DB: "JustChat.DB"
     ports:
-      - '7000:5432'
+      - '7005:5432'
     volumes: 
       - postgre:/var/lib/postgresql/data
       - ./postgre/init.sql:/docker-entrypoint-initdb.d/create_tables.sql
