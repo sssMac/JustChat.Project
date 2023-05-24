@@ -3,6 +3,7 @@ using JustChat.API.StartUp;
 using Microsoft.EntityFrameworkCore;
 using MediatR;
 using Microsoft.AspNetCore.Server.Kestrel.Core;
+using JustChat.API.Services;
 
 var builder = WebApplication.CreateBuilder(args);
 //builder.WebHost.ConfigureKestrel(options =>
@@ -23,6 +24,7 @@ builder.Services.AddDbContext<ApplicationContext>(options => options.UseNpgsql(
 
 var app = builder.Build();
 
+app.UseRouting();
 app.ConfigureSwagger();
 app.UseHttpsRedirection();
 app.ConfigureSignalR();
