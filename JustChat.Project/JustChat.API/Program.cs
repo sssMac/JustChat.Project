@@ -5,12 +5,12 @@ using MediatR;
 using Microsoft.AspNetCore.Server.Kestrel.Core;
 
 var builder = WebApplication.CreateBuilder(args);
-builder.WebHost.ConfigureKestrel(options =>
-{
-    // Setup a HTTP/2 endpoint without TLS.
-    options.ListenLocalhost(50051, o => o.Protocols =
-        HttpProtocols.Http2);
-});
+//builder.WebHost.ConfigureKestrel(options =>
+//{
+//    // Setup a HTTP/2 endpoint without TLS.
+//    options.ListenLocalhost(50051, o => o.Protocols =
+//        HttpProtocols.Http2);
+//});
 
 builder.Services.RegisterService(builder.Configuration);
 builder.Services.RegisterMongoDB(builder.Configuration);
