@@ -4,19 +4,17 @@
     {
         public static IServiceCollection RegisterCors(this IServiceCollection services)
         {
-            services.AddCors(options => options.AddPolicy("grpc-cors-policy", corsPolicyBuilder =>
-            {
-                corsPolicyBuilder
-                    .AllowAnyOrigin()
-                    .AllowAnyMethod()
-                    .AllowAnyHeader()
-                    .WithExposedHeaders("Grpc-Status", "Grpc-Message", "Grpc-Encoding", "Grpc-Accept-Encoding"); ;
-            }));
+            services.AddCors();
+
             return services;
         }
         public static WebApplication ConfigureCors(this WebApplication app)
         {
-            app.UseCors();
+            app.UseCors(x => x
+                .AllowAnyMethod()
+                .AllowAnyHeader()
+                .SetIsOriginAllowed(origin => true)
+                .AllowCredentials());
 
             return app;
         }
