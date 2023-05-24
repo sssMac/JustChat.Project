@@ -81,6 +81,7 @@ namespace JustChat.API.Services
 
         public override async Task ChatStream(StreamRequest request, IServerStreamWriter<ChatMessage> responseStream, ServerCallContext context)
         {
+            Console.WriteLine($"Начало ChatStream для {request.Username}");
             var userName = request.Username;
             var user = await _chatControll.GetUserByNameAsync(userName);
 
@@ -90,6 +91,7 @@ namespace JustChat.API.Services
             {
                 while (!context.CancellationToken.IsCancellationRequested)
                 {
+                    Console.WriteLine($"Вроде как отправка сообщения для {request.Username}");
                     await _chatControll.BroadcastMessagesAsync(user, context.CancellationToken);
                     await Task.Delay(1000);
                 }
