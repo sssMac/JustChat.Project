@@ -12,6 +12,11 @@ services:
       - ASPNETCORE_ENVIRONMENT=Development
       - ASPNETCORE_URLS=https://+:443;http://+:80
       - PostgreSQL__DefaultConnection=Host=postgre;Port=5432;Database=JustChat.DB;Username=postgres;Password=russiamedved
+      
+      - Kestrel__Endpoints__Grpc__Url=http://+:443
+      - Kestrel__Endpoints__Grpc__Protocols=Http2
+      - Kestrel__Endpoints__Common__Url=http://+:80
+      - Kestrel__Endpoints__Common__Protocols=Http1AndHttp2AndHttp3
 
       - MongoDBSettings__Database=JustChat
       - MongoDBSettings__CollectionName=MetaFile
