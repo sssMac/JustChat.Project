@@ -88,7 +88,8 @@ namespace JustChat.API.Services
                 var response = new ChatMessage
                 {
                     Username = message.UserName,
-                    Message = message.Text
+                    Message = message.Text,
+                    Channel = "aye"
                 };
                 Console.WriteLine($"{message.UserName} получает {message.Text}");
                 foreach (var streamWriter in streamWriters)
