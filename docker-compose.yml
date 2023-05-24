@@ -10,7 +10,7 @@ services:
       - "5226:443"
     environment:
       - ASPNETCORE_ENVIRONMENT=Development
-
+      - ASPNETCORE_URLS=https://+:443;http://+:80
       - PostgreSQL__DefaultConnection=Host=postgre;Port=5432;Database=JustChat.DB;Username=postgres;Password=russiamedved
 
       - MongoDBSettings__Database=JustChat
