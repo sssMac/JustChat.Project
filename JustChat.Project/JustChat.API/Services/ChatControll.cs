@@ -35,6 +35,8 @@ namespace JustChat.API.Services
 
             var guid = Guid.NewGuid().ToString();
             var userr = await _usersManager.AddOnlineUser(user.UserName, guid);
+
+            Console.WriteLine($"try add to signalR {userr.Id} - {userr.ConnectionId}");
             await _hubContext.Clients.All.SendAsync("ReceiveJoinUser", userr);
             await _hubContext.Groups.AddToGroupAsync(guid, user.UserName);
             await _usersManager.AddToGroup(user.UserName, user.UserName);

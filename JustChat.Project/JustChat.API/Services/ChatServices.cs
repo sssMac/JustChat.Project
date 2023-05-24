@@ -23,6 +23,7 @@ namespace JustChat.API.Services
 
         public override async Task<JoinChannelResponse> JoinChannel(JoinChannelRequest request, ServerCallContext context)
         {
+            Console.WriteLine($"{request.Username} connected!");
             var userName = request.Username;
 
             var user = new User
