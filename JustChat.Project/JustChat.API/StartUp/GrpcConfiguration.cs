@@ -13,7 +13,8 @@ namespace JustChat.API.StartUp
 
         public static WebApplication ConfigureGrpc(this WebApplication app)
         {
-            app.MapGrpcService<ChatService>();
+            app.UseGrpcWeb();
+            app.MapGrpcService<ChatService>().EnableGrpcWeb().RequireCors("grpc-cors-policy"); ;
 
             return app;
         }
