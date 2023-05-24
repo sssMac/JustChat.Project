@@ -21,7 +21,7 @@ namespace JustChat.API.Services
             _hubContext = hubContext;
         }
 
-        public override async Task<JoinChannelResponse> JoinChannel(JoinChannelRequest request, ServerCallContext context)
+        public override async Task<JoinChannelResponse> JoinChannel(JoinChannelRequest request, ServerCallContext context)  
         {
             Console.WriteLine($"{request.Username} connected!");
             var userName = request.Username;

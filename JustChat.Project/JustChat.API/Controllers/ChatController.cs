@@ -124,6 +124,7 @@ namespace JustChat.API.Controllers
 
             };
 
+            Console.WriteLine($"Отправка сообщение в контрллере для {mess.Whom}");
             var user = await _chatControll.GetUserByNameAsync(mess.Whom);
             await _chatControll.SaveMessageToUsersAsync(user, mess.Text);
 

@@ -68,6 +68,7 @@ namespace JustChat.API.Services
 
         public Task SaveMessageToUsersAsync(User user, string text)
         {
+            Console.WriteLine($"Сохранение сообщени для  {user.UserName}");
             foreach (var pair in Users)
             {
                 pair.Key.ReceiveMessage(user, text);
@@ -89,7 +90,7 @@ namespace JustChat.API.Services
                     Username = message.UserName,
                     Message = message.Text
                 };
-
+                Console.WriteLine($"{message.UserName} получает {message.Text}");
                 foreach (var streamWriter in streamWriters)
                 {
                     await streamWriter.WriteAsync(response, cancellationToken);
