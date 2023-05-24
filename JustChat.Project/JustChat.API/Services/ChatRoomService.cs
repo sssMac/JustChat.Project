@@ -1,4 +1,5 @@
-﻿using Grpc.Core;
+﻿using ChatServerApp.Protos;
+using Grpc.Core;
 using System.Collections.Concurrent;
 
 namespace JustChat.API.Services
@@ -47,6 +48,8 @@ namespace JustChat.API.Services
             if (!_chatRooms.ContainsKey(chatRoomId))
             {
                 _chatRooms[chatRoomId] = new List<ChatClient> { chatClient };
+
+                Console.WriteLine($"{chatClient.UserName} connected!");
             }
             else
             {

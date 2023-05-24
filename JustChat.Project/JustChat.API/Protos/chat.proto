@@ -2,7 +2,7 @@ syntax = "proto3";
 
 option csharp_namespace = "ChatServerApp.Protos";
 
-package chat;
+package proto;
 
 service ChatServer {
   // Bidirectional communication stream between client and server
