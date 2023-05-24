@@ -11,19 +11,17 @@ var builder = WebApplication.CreateBuilder(args);
 
 //builder.WebHost.ConfigureKestrel(options =>
 //{
-//    options.AddServerHeader = false;
-//    options.Listen(IPAddress.Any, 5666, listenOptions =>
+//    options.Listen(IPAddress.Any, 5019, listenOptions =>
 //    {
 //        listenOptions.Protocols = HttpProtocols.Http2;
+
 //    });
 //});
-
 builder.Services.RegisterService(builder.Configuration);
 builder.Services.RegisterMongoDB(builder.Configuration);
 builder.Services.RegisterRedisCache(builder.Configuration);
 builder.Services.RegisterCors();
 builder.Services.RegisterGrpc();
-
 builder.Services.RegisterSignalR();
 builder.Services.AddDbContext<ApplicationContext>(options => options.UseNpgsql(
                     builder.Configuration["PostgreSQL:DefaultConnection"]));
@@ -35,9 +33,11 @@ app.ConfigureSwagger();
 
 app.UseHttpsRedirection();
 app.ConfigureSignalR();
-app.ConfigureCors();
-app.ConfigureGrpc();
-app.UseAuthorization();
+app.UseGrpcWeb(new GrpcWebOptions { DefaultEnabled = true });
+app.UseCors();
 app.MapControllers();
+app.MapGrpcService<ChatService>();
+app.UseAuthorization();
+
 
 app.Run();

@@ -12,6 +12,7 @@
 
   <ItemGroup>
     <PackageReference Include="AWSSDK.Extensions.NETCore.Setup" Version="3.7.2" />
+    <PackageReference Include="Grpc.AspNetCore.Server.Reflection" Version="2.53.0" />
     <PackageReference Include="Grpc.AspNetCore.Web" Version="2.53.0" />
     <PackageReference Include="Grpc.Core.Api" Version="2.53.0" />
     <PackageReference Include="Grpc.Tools" Version="2.54.0">
