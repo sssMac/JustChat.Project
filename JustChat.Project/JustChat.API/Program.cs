@@ -5,8 +5,18 @@ using MediatR;
 using Microsoft.AspNetCore.Server.Kestrel.Core;
 using JustChat.API.Services;
 using System.Net;
+using Microsoft.AspNetCore.Hosting;
 
 var builder = WebApplication.CreateBuilder(args);
+
+builder.WebHost.ConfigureKestrel(options =>
+{
+    options.AddServerHeader = false;
+    options.Listen(IPAddress.Any, 80, listenOptions =>
+    {
+        listenOptions.Protocols = HttpProtocols.Http2;
+    });
+});
 
 builder.Services.RegisterService(builder.Configuration);
 builder.Services.RegisterMongoDB(builder.Configuration);
@@ -22,6 +32,7 @@ var app = builder.Build();
 
 app.UseRouting();
 app.ConfigureSwagger();
+
 app.UseHttpsRedirection();
 app.ConfigureSignalR();
 app.ConfigureCors();
