@@ -7,6 +7,7 @@ services:
       dockerfile: JustChat.API/Dockerfile
     ports:
       - "5225:80"
+      - "5226:443"
     environment:
       - ASPNETCORE_ENVIRONMENT=Development
 

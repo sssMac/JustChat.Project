@@ -1,4 +1,5 @@
-﻿using JustChat.API.Services;
+﻿using Amazon.Auth.AccessControlPolicy;
+using JustChat.API.Services;
 
 namespace JustChat.API.StartUp
 {
@@ -14,11 +15,10 @@ namespace JustChat.API.StartUp
         public static WebApplication ConfigureGrpc(this WebApplication app)
         {
             app.UseGrpcWeb();
-            //app.MapGrpcService<ChatService>().EnableGrpcWeb();
 
             app.UseEndpoints(endpoints =>
             {
-                endpoints.MapGrpcService<ChatService>().EnableGrpcWeb();
+                endpoints.MapGrpcService<ChatService>().EnableGrpcWeb().RequireCors("grpc-cors-policy");
             });
 
             return app;

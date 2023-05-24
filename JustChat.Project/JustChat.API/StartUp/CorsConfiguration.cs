@@ -16,11 +16,7 @@
         }
         public static WebApplication ConfigureCors(this WebApplication app)
         {
-            app.UseCors(x => x
-                .AllowAnyMethod()
-                .AllowAnyHeader()
-                .SetIsOriginAllowed(origin => true) // allow any origin
-                .AllowCredentials());
+            app.UseCors();
 
             return app;
         }
