@@ -34,7 +34,7 @@ app.ConfigureSwagger();
 app.UseHttpsRedirection();
 app.ConfigureSignalR();
 app.UseGrpcWeb(new GrpcWebOptions { DefaultEnabled = true });
-app.UseCors();
+app.ConfigureCors();
 app.MapControllers();
 app.MapGrpcService<ChatService>();
 app.UseAuthorization();
