@@ -9,14 +9,14 @@ using Microsoft.AspNetCore.Hosting;
 
 var builder = WebApplication.CreateBuilder(args);
 
-builder.WebHost.ConfigureKestrel(options =>
-{
-    options.AddServerHeader = false;
-    options.Listen(IPAddress.Any, 80, listenOptions =>
-    {
-        listenOptions.Protocols = HttpProtocols.Http2;
-    });
-});
+//builder.WebHost.ConfigureKestrel(options =>
+//{
+//    options.AddServerHeader = false;
+//    options.Listen(IPAddress.Any, 5666, listenOptions =>
+//    {
+//        listenOptions.Protocols = HttpProtocols.Http2;
+//    });
+//});
 
 builder.Services.RegisterService(builder.Configuration);
 builder.Services.RegisterMongoDB(builder.Configuration);
