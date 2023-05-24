@@ -11,6 +11,7 @@ namespace JustChat.API.Services
 
         public override async Task<JoinChannelResponse> JoinChannel(JoinChannelRequest request, ServerCallContext context)
         {
+            Console.WriteLine($"{request.Username} connected to {request.Channel} channel!");
             string channel = request.Channel;
 
             if (!channels.ContainsKey(channel))
