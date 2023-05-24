@@ -5,51 +5,49 @@ option csharp_namespace = "ChatServerApp.Protos";
 package proto;
 
 service ChatServer {
-  // Bidirectional communication stream between client and server
-  rpc HandleCommunication(stream ClientMessage) returns (stream ServerMessage);
+  rpc JoinChannel (JoinChannelRequest) returns (JoinChannelResponse);
+  rpc LeaveChannel (LeaveChannelRequest) returns (LeaveChannelResponse);
+  rpc SendMessage (SendMessageRequest) returns (SendMessageResponse);
 
+  // stream of messages
+  rpc ChatStream (StreamRequest) returns (stream ChatMessage);
 }
 
-//Client Messages:
-message ClientMessage {
-  oneof content {
-	ClientMessageLogin login = 1;
-	ClientMessageChat chat = 2;
-  }
+message JoinChannelRequest {
+  string username = 1;
+  string channel = 2;
 }
 
-message ClientMessageLogin {
-  string chat_room_id = 1;
-  string user_name = 2;
+message JoinChannelResponse {
+  bool success = 1;
 }
 
-
-message ClientMessageChat {
-  string text = 1;
+message LeaveChannelRequest {
+  string username = 1;
+  string channel = 2;
 }
 
-//Server Messages
-message ServerMessage {
-  oneof content {
-	ServerMessageLoginSuccess login_success = 1;
-	ServerMessageLoginFailure login_failure = 2;
-	ServerMessageUserJoined user_joined = 3;
-	ServerMessageChat chat = 4;
-  }
+message LeaveChannelResponse {
+  bool success = 1;
 }
 
-message ServerMessageLoginFailure {
-  string reason = 1;
+message SendMessageRequest {
+  string username = 1;
+  string channel = 2;
+  string message = 3;
 }
 
-message ServerMessageLoginSuccess {
+message SendMessageResponse {
+  bool success = 1;
 }
 
-message ServerMessageUserJoined {
-  string user_name = 1;
+message StreamRequest {
+  string username = 1;
+  string channel = 2;
 }
 
-message ServerMessageChat {
-  string text = 1;
-  string user_name = 2;
+message ChatMessage {
+  string username = 1;
+  string channel = 2;
+  string message = 3;
 }

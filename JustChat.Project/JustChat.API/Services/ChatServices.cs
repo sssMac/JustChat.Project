@@ -1,80 +1,110 @@
-﻿using ChatServerApp.Protos;
-using Grpc.Core;
-using Microsoft.Extensions.Logging;
+﻿using Grpc.Core;
+using System.Collections.Concurrent;
+using ChatServerApp.Protos;
 
 namespace JustChat.API.Services
 {
     public class ChatService : ChatServer.ChatServerBase
     {
-        private readonly ILogger<ChatService> _logger;
-        private readonly ChatRoomService _chatRoomService;
+        private static readonly Dictionary<string, List<IServerStreamWriter<ChatMessage>>> channels =
+    new Dictionary<string, List<IServerStreamWriter<ChatMessage>>>();
 
-        public ChatService(ChatRoomService chatRoomService, ILogger<ChatService> logger)
+        public override async Task<JoinChannelResponse> JoinChannel(JoinChannelRequest request, ServerCallContext context)
         {
-            _chatRoomService = chatRoomService;
-            _logger = logger;
+            string channel = request.Channel;
+
+            if (!channels.ContainsKey(channel))
+            {
+                channels[channel] = new List<IServerStreamWriter<ChatMessage>>();
+            }
+
+            channels[channel].Add(new ChatStreamWriter(context));
+
+            return new JoinChannelResponse { Success = true };
         }
 
-        public override async Task HandleCommunication(IAsyncStreamReader<ClientMessage> requestStream, IServerStreamWriter<ServerMessage> responseStream, ServerCallContext context)
+        public override async Task<LeaveChannelResponse> LeaveChannel(LeaveChannelRequest request, ServerCallContext context)
         {
-            var userName = string.Empty;
-            var chatRoomId = string.Empty;
+            string channel = request.Channel;
 
-            while (true)
+            if (channels.ContainsKey(channel))
             {
-                //Read a message from the client.
-                var clientMessage = await _chatRoomService.ReadMessageWithTimeoutAsync(requestStream, Timeout.InfiniteTimeSpan);
-                switch (clientMessage.ContentCase)
+                channels[channel].Remove(new ChatStreamWriter(context));
+
+                if (channels[channel].Count == 0)
                 {
-                    case ClientMessage.ContentOneofCase.Login:
-
-                        var loginMessage = clientMessage.Login;
-                        //get username and chatRoom Id from clientMessage.
-                        chatRoomId = loginMessage.ChatRoomId;
-                        userName = loginMessage.UserName;
-
-                        if (string.IsNullOrEmpty(userName) || string.IsNullOrEmpty(chatRoomId))
-                        {
-                            //Send a login Failure message.
-                            var failureMessage = new ServerMessage
-                            {
-                                LoginFailure = new ServerMessageLoginFailure { Reason = "Invalid username" }
-                            };
-
-                            _logger.LogInformation(failureMessage.LoginFailure.Reason);
-                            await responseStream.WriteAsync(failureMessage);
-
-                            return;
-                        }
-
-                        //Send login succes message to client
-                        var successMessage = new ServerMessage { LoginSuccess = new ServerMessageLoginSuccess() };
-
-                        _logger.LogInformation($"{loginMessage.UserName} login success!");
-                        await responseStream.WriteAsync(successMessage);
-
-                        //Add client to chat room.
-                        await _chatRoomService.AddClientToChatRoom(chatRoomId, new ChatClient
-                        {
-                            StreamWriter = responseStream,
-                            UserName = userName
-                        });
-
-                        break;
-
-                    case ClientMessage.ContentOneofCase.Chat:
-
-                        var chatMessage = clientMessage.Chat;
-
-                        if (userName is not null && chatRoomId is not null)
-                        {
-                            //broad cast the message to the room
-                            _logger.LogInformation($"{chatRoomId} : {userName} send : {chatMessage.Text}!");
-                            await _chatRoomService.BroadcastMessageToChatRoom(chatRoomId, userName, chatMessage.Text);
-                        }
-
-                        break;
+                    channels.Remove(channel);
                 }
+            }
+
+            return new LeaveChannelResponse { Success = true };
+        }
+
+        public override async Task<SendMessageResponse> SendMessage(SendMessageRequest request, ServerCallContext context)
+        {
+            string channel = request.Channel;
+            string message = request.Message;
+            string username = request.Username;
+
+            if (!channels.ContainsKey(channel))
+            {
+                return new SendMessageResponse { Success = false };
+            }
+
+            foreach (var streamWriter in channels[channel])
+            {
+                await streamWriter.WriteAsync(new ChatMessage { Channel = channel, Username = username, Message = message });
+            }
+
+            return new SendMessageResponse { Success = true };
+        }
+
+        public override async Task ChatStream(StreamRequest request, IServerStreamWriter<ChatMessage> responseStream, ServerCallContext context)
+        {
+            string channel = request.Channel;
+            string username = request.Username;
+
+            if (!channels.ContainsKey(channel))
+            {
+                return;
+            }
+
+            var streamWriter = new ChatStreamWriter(context, responseStream);
+            channels[channel].Add(streamWriter);
+
+            await Task.Delay(-1, context.CancellationToken);
+
+            channels[channel].Remove(streamWriter);
+
+            if (channels[channel].Count == 0)
+            {
+                channels.Remove(channel);
+            }
+        }
+    }
+
+    public class ChatStreamWriter : IServerStreamWriter<ChatMessage>
+    {
+        private ServerCallContext context;
+        private IServerStreamWriter<ChatMessage> responseStream;
+
+        public ChatStreamWriter(ServerCallContext context, IServerStreamWriter<ChatMessage> responseStream = null)
+        {
+            this.context = context;
+            this.responseStream = responseStream;
+        }
+
+        public WriteOptions? WriteOptions { get => throw new NotImplementedException(); set => throw new NotImplementedException(); }
+
+        public async Task WriteAsync(ChatMessage message)
+        {
+            try
+            {
+                await responseStream.WriteAsync(message);
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Error writing message: {ex}");
             }
         }
     }
