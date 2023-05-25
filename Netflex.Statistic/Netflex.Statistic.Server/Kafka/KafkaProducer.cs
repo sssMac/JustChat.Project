@@ -9,8 +9,15 @@ namespace Netflex.Statistic.Server.Kafka
 {
     public class KafkaProducer : IKafkaProducer
     {
-        private readonly string bootstrapServers = "localhost:9092";
+        private string bootstrapServers = "";
         private readonly string topic = "statistics";
+        private IConfiguration _configuration;
+
+        public KafkaProducer(IConfiguration configuration)
+        {
+            _configuration = configuration;
+            bootstrapServers = _configuration.GetValue<string>("Kafka:URL");
+        }
 
         public async Task<bool> Post(StatisticRequest orderRequest)
         {

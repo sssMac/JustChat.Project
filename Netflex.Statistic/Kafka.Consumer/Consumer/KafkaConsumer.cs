@@ -1,6 +1,7 @@
 ﻿using Confluent.Kafka;
 using Kafka.Consumer.Configuration;
 using Kafka.Consumer.Models;
+using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Hosting;
 using MongoDB.Driver;
 using System;
@@ -17,13 +18,16 @@ namespace Kafka.Consumer.Consumer
     {
         private readonly string topic = "statistics";
         private readonly string groupId = "statistics_group";
-        private readonly string bootstrapServers = "localhost:9092";
+        private readonly string bootstrapServers = "";
         private IMongoCollection<Statistic> _statistics;
+        private IConfiguration _configuration;
 
-        public KafkaConsumer(IMongoDBSettings mongoDBSettings, IMongoClient mongoClient)
+        public KafkaConsumer(IMongoDBSettings mongoDBSettings, IMongoClient mongoClient, IConfiguration configuration)
         {
             var mongoDB = mongoClient.GetDatabase("JustChat");
             _statistics = mongoDB.GetCollection<Statistic>("Statistics");
+            _configuration = configuration;
+            bootstrapServers = _configuration.GetSection("Kafka:URL").Value;
         }
 
         public async Task StartAsync(CancellationToken cancellationToken)

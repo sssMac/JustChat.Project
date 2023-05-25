@@ -166,6 +166,8 @@ services:
       - MongoDBSettings__CollectionName=Statistics
       - MongoDBSettings__Host=mongodb
       - MongoDBSettings__Port=27017
+
+      - Kafka__URL=broker:9092
     depends_on:
       - zookeeper
       - broker
