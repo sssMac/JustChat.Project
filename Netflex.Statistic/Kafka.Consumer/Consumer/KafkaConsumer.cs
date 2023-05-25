@@ -34,12 +34,6 @@ namespace Kafka.Consumer.Consumer
 
         public async Task StartAsync(CancellationToken cancellationToken)
         {
-            await Task.Run(() => Start(cancellationToken));
-
-        }
-
-        private async Task Start(CancellationToken cancellationToken)
-        {
             Console.WriteLine($"KafkaConsumer START!");
 
             var config = new ConsumerConfig
@@ -65,6 +59,12 @@ namespace Kafka.Consumer.Consumer
                     Console.WriteLine($"Consumed message '{cr.Message}' at '{cr.TopicPartitionOffset}'");
                 }
             }
+
+        }
+
+        private async Task Start(CancellationToken cancellationToken)
+        {
+           
             //var statisticRequest = JsonSerializer.Deserialize<StatisticProcessingRequest>(consumer.Message.Value);
             //Console.WriteLine($" ----- > {statisticRequest.Name} FROM KafkaConsumer");
             //if (statisticRequest != null)
