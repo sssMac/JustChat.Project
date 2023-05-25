@@ -11,7 +11,7 @@ namespace Kafka.Consumer.Consumer
     public class KafkaConsumer : IHostedService
     {
         private readonly string topic = "topic";
-        private readonly string groupId = "statistics_group";
+        private readonly string groupId = "consumer-group";
         private readonly string bootstrapServers = "";
         private IMongoCollection<Statistic> _statistics;
         private IConfiguration _configuration;
