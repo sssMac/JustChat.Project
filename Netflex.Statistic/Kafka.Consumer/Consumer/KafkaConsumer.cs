@@ -11,6 +11,7 @@ using System.Linq;
 using System.Text;
 using System.Text.Json;
 using System.Threading.Tasks;
+using static Confluent.Kafka.ConfigPropertyNames;
 
 namespace Kafka.Consumer.Consumer
 {
@@ -41,59 +42,45 @@ namespace Kafka.Consumer.Consumer
                 AutoOffsetReset = AutoOffsetReset.Earliest
             };
 
-            try
+            //var statisticRequest = JsonSerializer.Deserialize<StatisticProcessingRequest>(consumer.Message.Value);
+            //Console.WriteLine($" ----- > {statisticRequest.Name} FROM KafkaConsumer");
+
+            using (var consumerBuilder = new ConsumerBuilder<Ignore, string>(config).Build())
             {
-                using (var consumerBuilder = new ConsumerBuilder<Ignore, string>(config).Build())
+                Console.WriteLine($"KafkaConsumer BUILD!");
+
+                consumerBuilder.Subscribe(topic);
+                var cancelToken = new CancellationTokenSource();
+
+                while (cancelToken.Token != null)
                 {
-                    Console.WriteLine($"KafkaConsumer BUILD!");
+                    var consumer = consumerBuilder.Consume(cancelToken.Token);
+                    var statisticRequest = JsonSerializer.Deserialize<StatisticProcessingRequest>(consumer.Message.Value);
+                    Console.WriteLine($" ----- > {statisticRequest.Name} FROM KafkaConsumer");
 
-                    consumerBuilder.Subscribe(topic);
-                    var cancelToken = new CancellationTokenSource();
-
-                    try
+                    if (statisticRequest != null)
                     {
-                        while (true)
+                        var entity = await _statistics.Find(s => s.ContentId == statisticRequest.Id).FirstAsync();
+                        if (entity == null)
                         {
-                            var consumer = consumerBuilder.Consume (cancelToken.Token);
-                            var statisticRequest = JsonSerializer.Deserialize<StatisticProcessingRequest>(consumer.Message.Value);
-                            Console.WriteLine($" ----- > {statisticRequest.Name} FROM KafkaConsumer");
-
-                            if (statisticRequest != null)
+                            await _statistics.InsertOneAsync(new Statistic
                             {
-                                var entity = await _statistics.Find(s => s.ContentId == statisticRequest.Id).FirstAsync();
-                                if(entity == null)
-                                {
-                                    await _statistics.InsertOneAsync(new Statistic
-                                    {
-                                        ContentId = statisticRequest.Id,
-                                        ContentName = statisticRequest.Name,
-                                        ViewCount = 1
-                                    });
-                                }
-                                else
-                                {
-                                    var filter = Builders<Statistic>.Filter.Where(s => s.ContentId == statisticRequest.Id);
-                                    var update = Builders<Statistic>.Update.Set(x => x.ViewCount, entity.ViewCount + 1);
-                                    await _statistics.UpdateOneAsync(filter, update);
-                                }
-                            }
-
-
-                            Debug.WriteLine($"Processing content name{ statisticRequest.Name}");
+                                ContentId = statisticRequest.Id,
+                                ContentName = statisticRequest.Name,
+                                ViewCount = 1
+                            });
+                        }
+                        else
+                        {
+                            var filter = Builders<Statistic>.Filter.Where(s => s.ContentId == statisticRequest.Id);
+                            var update = Builders<Statistic>.Update.Set(x => x.ViewCount, entity.ViewCount + 1);
+                            await _statistics.UpdateOneAsync(filter, update);
                         }
                     }
-                    catch (OperationCanceledException)
-                    {
-                        Console.WriteLine($"KafkaConsumer ERROR 1!");
 
-                        consumerBuilder.Close();
-                    }
+
+                    Debug.WriteLine($"Processing content name{statisticRequest.Name}");
                 }
-            }
-            catch (Exception ex)
-            {
-                Console.WriteLine($"KafkaConsumer ERROR 2!");
-                System.Diagnostics.Debug.WriteLine(ex.Message);
             }
 
         }
