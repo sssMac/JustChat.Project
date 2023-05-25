@@ -19,7 +19,15 @@ namespace Kafka.Consumer.Configuration
                 port: int.Parse(config.GetSection("MongoDBSettings:Port").Value)
             );
 
-            services.AddSingleton<IMongoDBSettings, MongoDBSettings>();
+            services.AddSingleton<IMongoDBSettings>(s => new MongoDBSettings
+            (
+                collectionName: config.GetSection("MongoDBSettings:CollectionName").Value,
+                databaseName: config.GetSection("MongoDBSettings:DatabaseName").Value,
+                user: config.GetSection("MongoDBSettings:User").Value,
+                password: config.GetSection("MongoDBSettings:Password").Value,
+                host: config.GetSection("MongoDBSettings:Host").Value,
+                port: int.Parse(config.GetSection("MongoDBSettings:Port").Value)
+            ));
             services.AddSingleton<IMongoClient>(s =>
                 new MongoClient(new MongoClientSettings()
                 {
