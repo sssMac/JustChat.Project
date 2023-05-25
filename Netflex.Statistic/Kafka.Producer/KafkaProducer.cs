@@ -1,13 +1,13 @@
 ﻿using Confluent.Kafka;
-using Microsoft.AspNetCore.Mvc;
-using Netflex.Statistic.Server.Models;
+using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.Hosting;
 using System.Diagnostics;
 using System.Net;
 using System.Text.Json;
 
-namespace Netflex.Statistic.Server.Kafka
-{
-    public class KafkaProducer : IKafkaProducer
+namespace Kafka.Producer 
+{ 
+    public class KafkaProducer : IHostedService
     {
         private string bootstrapServers = "";
         private readonly string topic = "topic";
@@ -16,7 +16,7 @@ namespace Netflex.Statistic.Server.Kafka
         public KafkaProducer(IConfiguration configuration)
         {
             _configuration = configuration;
-            bootstrapServers = _configuration.GetValue<string>("Kafka:URL");
+            bootstrapServers = _configuration.GetSection("Kafka:URL").Value;
             
         }
 
@@ -57,6 +57,17 @@ namespace Netflex.Statistic.Server.Kafka
             }
 
             return await Task.FromResult(false);
+        }
+
+        public async Task StartAsync(CancellationToken cancellationToken)
+        {
+            string message = JsonSerializer.Serialize(new StatisticRequest { Id = Guid.NewGuid(), Name = "TestName"});
+            await SendStatisticRequest(topic, message);
+        }
+
+        public Task StopAsync(CancellationToken cancellationToken)
+        {
+            return Task.CompletedTask;
         }
     }
 

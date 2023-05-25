@@ -1,6 +1,4 @@
-﻿using Microsoft.AspNetCore.Connections;
-using Netflex.Statistic.Server.Kafka;
-using Netflex.Statistic.Server.Models;
+﻿using Kafka.Producer;
 using Newtonsoft.Json;
 using RabbitMQ.Client;
 using System.Text;
@@ -10,9 +8,9 @@ namespace Netflex.Statistic.Server.RabitMQProducer
     public class RabitMQProducer : IRabitMQProducer
     {
         ConnectionFactory _factory;
-        IKafkaProducer _kafkaProducer;
+        KafkaProducer _kafkaProducer;
 
-        public RabitMQProducer(IKafkaProducer kafkaProducer)
+        public RabitMQProducer(KafkaProducer kafkaProducer)
         {
             _factory = new ConnectionFactory
             {
@@ -29,7 +27,7 @@ namespace Netflex.Statistic.Server.RabitMQProducer
             using var channel = connection.CreateModel();
             channel.QueueDeclare("Statistic", exclusive: false);
 
-            var statistic = JsonConvert.DeserializeObject<StatisticRequest>(request);
+            var statistic = JsonConvert.DeserializeObject<Kafka.Producer.StatisticRequest>(request);
 
             var body = Encoding.UTF8.GetBytes(statistic.Name);
             await _kafkaProducer.Post(statistic);

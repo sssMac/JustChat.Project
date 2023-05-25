@@ -19,6 +19,7 @@
 
   <ItemGroup>
     <ProjectReference Include="..\Kafka.Consumer\Kafka.Consumer.csproj" />
+    <ProjectReference Include="..\Kafka.Producer\Kafka.Producer.csproj" />
   </ItemGroup>
 
 </Project>

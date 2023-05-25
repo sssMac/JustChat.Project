@@ -1,6 +1,5 @@
-﻿using Netflex.Statistic.Server.Models;
-
-namespace Netflex.Statistic.Server.Kafka
+﻿
+namespace Kafka.Producer
 {
     public interface IKafkaProducer
     {
