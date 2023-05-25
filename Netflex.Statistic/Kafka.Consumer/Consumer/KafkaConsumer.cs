@@ -4,6 +4,7 @@ using Kafka.Consumer.Models;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Hosting;
 using MongoDB.Driver;
+using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
@@ -18,7 +19,7 @@ namespace Kafka.Consumer.Consumer
 {
     public class KafkaConsumer : IHostedService
     {
-        private readonly string topic = "statistics";
+        private readonly string topic = "topic";
         private readonly string groupId = "statistics_group";
         private readonly string bootstrapServers = "";
         private IMongoCollection<Statistic> _statistics;
@@ -34,6 +35,7 @@ namespace Kafka.Consumer.Consumer
 
         public async Task StartAsync(CancellationToken cancellationToken)
         {
+            Console.WriteLine($"TEST Kafka url :  {_configuration.GetSection("Kafka:URL").Value}");
             Console.WriteLine($"KafkaConsumer START!");
 
             var config = new ConsumerConfig
@@ -43,50 +45,31 @@ namespace Kafka.Consumer.Consumer
                 AutoOffsetReset = AutoOffsetReset.Earliest
             };
 
-            CancellationTokenSource cts = new CancellationTokenSource();
-            Console.CancelKeyPress += (_, e) =>
-            {
-                e.Cancel = true;
-                cts.Cancel();
-            };
-            using (var consumerBuilder = new ConsumerBuilder<Ignore, string>(config).Build())
-            {
-                consumerBuilder.Subscribe(topic);
 
-                while (!cancellationToken.IsCancellationRequested)
+            using var consumer = new ConsumerBuilder<Ignore, string>(config).Build();
+            consumer.Subscribe(topic);
+
+            CancellationTokenSource cts = new CancellationTokenSource();
+
+            try
+            {
+                while (true)
                 {
-                    var cr = consumerBuilder.Consume(cts.Token);
-                    Console.WriteLine($"Consumed message '{cr.Message}' at '{cr.TopicPartitionOffset}'");
+                    var response = consumer.Consume(cts.Token);
+                    if(response.Message != null)
+                    {
+                        var result = JsonConvert.DeserializeObject<StatisticProcessingRequest>(response.Message.Value);
+                        Console.WriteLine($"Consumed message '{response.Message}' at '{response.TopicPartitionOffset}'");
+
+                    }
                 }
             }
+            catch (Exception)
+            {
 
-        }
+                throw;
+            }
 
-        private async Task Start(CancellationToken cancellationToken)
-        {
-           
-            //var statisticRequest = JsonSerializer.Deserialize<StatisticProcessingRequest>(consumer.Message.Value);
-            //Console.WriteLine($" ----- > {statisticRequest.Name} FROM KafkaConsumer");
-            //if (statisticRequest != null)
-            //            {
-            //                var entity = await _statistics.Find(s => s.ContentId == statisticRequest.Id).FirstAsync();
-            //                if (entity == null)
-            //                {
-            //                    await _statistics.InsertOneAsync(new Statistic
-            //                    {
-            //                        ContentId = statisticRequest.Id,
-            //                        ContentName = statisticRequest.Name,
-            //                        ViewCount = 1
-            //                    });
-            //                }
-            //                else
-            //                {
-            //                    var filter = Builders<Statistic>.Filter.Where(s => s.ContentId == statisticRequest.Id);
-            //                    var update = Builders<Statistic>.Update.Set(x => x.ViewCount, entity.ViewCount + 1);
-            //                    await _statistics.UpdateOneAsync(filter, update);
-            //                }
-            //            }
-           
         }
 
         public Task StopAsync(CancellationToken cancellationToken)

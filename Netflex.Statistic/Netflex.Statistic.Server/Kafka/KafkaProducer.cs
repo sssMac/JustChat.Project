@@ -10,7 +10,7 @@ namespace Netflex.Statistic.Server.Kafka
     public class KafkaProducer : IKafkaProducer
     {
         private string bootstrapServers = "";
-        private readonly string topic = "statistics";
+        private readonly string topic = "topic";
         private IConfiguration _configuration;
 
         public KafkaProducer(IConfiguration configuration)
