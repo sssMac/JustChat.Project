@@ -12,8 +12,8 @@ namespace Netflex.Statistic.Server.Controllers
 
         public StatisticController(IMongoDBSettings mongoDBSettings, IMongoClient mongoClient)
         {
-            var mongoDB = mongoClient.GetDatabase(mongoDBSettings.DatabaseName);
-            _statistics = mongoDB.GetCollection<Models.Statistic>(mongoDBSettings.CollectionName);
+            var mongoDB = mongoClient.GetDatabase("JustChat");
+            _statistics = mongoDB.GetCollection<Models.Statistic>("Statistics");
         }
 
         [HttpGet]
