@@ -7,7 +7,7 @@ using System.Text.Json;
 
 namespace Netflex.Statistic.Server.Kafka
 {
-    public class KafkaProducer : IKafkaProducer , IHostedService
+    public class KafkaProducer : IKafkaProducer
     {
         private string bootstrapServers = "";
         private readonly string topic = "topic";
@@ -17,6 +17,7 @@ namespace Netflex.Statistic.Server.Kafka
         {
             _configuration = configuration;
             bootstrapServers = _configuration.GetValue<string>("Kafka:URL");
+            
         }
 
         public async Task<bool> Post(StatisticRequest orderRequest)
@@ -56,16 +57,6 @@ namespace Netflex.Statistic.Server.Kafka
             }
 
             return await Task.FromResult(false);
-        }
-
-        public async Task StartAsync(CancellationToken cancellationToken)
-        {
-            await Post(new StatisticRequest { Id = Guid.NewGuid(), Name = "Test Name" });
-        }
-
-        public Task StopAsync(CancellationToken cancellationToken)
-        {
-            return Task.CompletedTask;
         }
     }
 
