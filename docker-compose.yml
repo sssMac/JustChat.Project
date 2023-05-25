@@ -170,7 +170,7 @@ services:
       - Kafka__URL=kafka:9092
     depends_on:
       - zookeeper
-      - broker
+      - kafka
       - mongodb
     links: 
      - kafka
