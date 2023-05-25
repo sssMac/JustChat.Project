@@ -31,6 +31,7 @@ namespace Netflex.Statistic.Server.Kafka
             ProducerConfig config = new ProducerConfig
             {
                 BootstrapServers = bootstrapServers,
+                AllowAutoCreateTopics = true,
             };
 
             try

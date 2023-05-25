@@ -33,7 +33,8 @@ namespace Kafka.Consumer.Consumer
             {
                 GroupId = groupId,
                 BootstrapServers = bootstrapServers,
-                AutoOffsetReset = AutoOffsetReset.Earliest
+                AutoOffsetReset = AutoOffsetReset.Earliest,
+                AllowAutoCreateTopics = true,
             };
 
 
