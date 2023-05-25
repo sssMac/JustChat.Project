@@ -175,7 +175,7 @@ services:
     links: 
      - kafka
 
-   zookeeper:
+  zookeeper:
     image: wurstmeister/zookeeper
     hostname: zookeeper
     ports:
