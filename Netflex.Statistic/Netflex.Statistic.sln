@@ -7,7 +7,7 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Netflex.Statistic.Server", 
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Kafka.Consumer", "Kafka.Consumer\Kafka.Consumer.csproj", "{216F7649-911D-4541-B02B-F9855AB2D68D}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Kafka.Producer", "Kafka.Producer\Kafka.Producer.csproj", "{AAFBCE95-B201-4894-BEC3-2A9895BD51B4}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Netflex.Kafka.Consumer", "Netflex.Kafka.Consumer\Netflex.Kafka.Consumer.csproj", "{29E303E8-4949-4F52-ACD1-DC5532CDACCC}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -23,10 +23,10 @@ Global
 		{216F7649-911D-4541-B02B-F9855AB2D68D}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{216F7649-911D-4541-B02B-F9855AB2D68D}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{216F7649-911D-4541-B02B-F9855AB2D68D}.Release|Any CPU.Build.0 = Release|Any CPU
-		{AAFBCE95-B201-4894-BEC3-2A9895BD51B4}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{AAFBCE95-B201-4894-BEC3-2A9895BD51B4}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{AAFBCE95-B201-4894-BEC3-2A9895BD51B4}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{AAFBCE95-B201-4894-BEC3-2A9895BD51B4}.Release|Any CPU.Build.0 = Release|Any CPU
+		{29E303E8-4949-4F52-ACD1-DC5532CDACCC}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{29E303E8-4949-4F52-ACD1-DC5532CDACCC}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{29E303E8-4949-4F52-ACD1-DC5532CDACCC}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{29E303E8-4949-4F52-ACD1-DC5532CDACCC}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

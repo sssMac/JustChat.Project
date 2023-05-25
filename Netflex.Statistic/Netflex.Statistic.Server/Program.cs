@@ -1,7 +1,8 @@
 using Kafka.Consumer.Configuration;
 using Netflex.Statistic.Server.RabitMQProducer;
 using Kafka.Consumer.Consumer;
-using Kafka.Producer;
+using Microsoft.Extensions.DependencyInjection;
+using Netflex.Statistic.Server.Kafka;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -13,8 +14,7 @@ builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 builder.Services.RegisterMongoDB(builder.Configuration);
 builder.Services.AddSingleton<IRabitMQProducer, RabitMQProducer>();
-builder.Services.AddSingleton<IHostedService, KafkaProducer>();
-builder.Services.AddSingleton<IHostedService, KafkaConsumer>();
+builder.Services.AddSingleton<IKafkaProducer, KafkaProducer>();
 builder.Services.AddCors();
 var app = builder.Build();
 
