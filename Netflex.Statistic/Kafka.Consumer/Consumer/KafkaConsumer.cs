@@ -52,8 +52,9 @@ namespace Kafka.Consumer.Consumer
                         {
                             var consumer = consumerBuilder.Consume (cancelToken.Token);
                             var statisticRequest = JsonSerializer.Deserialize<StatisticProcessingRequest>(consumer.Message.Value);
+                            Console.WriteLine($" ----- > {statisticRequest.Name} FROM KafkaConsumer");
 
-                            if(statisticRequest != null)
+                            if (statisticRequest != null)
                             {
                                 var entity = await _statistics.Find(s => s.ContentId == statisticRequest.Id).FirstAsync();
                                 if(entity == null)

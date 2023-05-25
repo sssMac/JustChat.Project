@@ -10,17 +10,16 @@ namespace Kafka.Consumer.Configuration
         public static IServiceCollection RegisterMongoDB(this IServiceCollection services, IConfiguration config)
         {
             var settings = new MongoDBSettings
-            {
-                Host = config.GetSection("MongoDBSettings:Host").Value,
-                Port = int.Parse(config.GetSection("MongoDBSettings:Port").Value),
-                User = config.GetSection("MongoDBSettings:User").Value,
-                Password = config.GetSection("MongoDBSettings:Password").Value,
-                DatabaseName = config.GetSection("MongoDBSettings:DatabaseName").Value,
-                CollectionName = config.GetSection("MongoDBSettings:CollectionName").Value,
-            };
+            (
+                collectionName: config.GetSection("MongoDBSettings:CollectionName").Value,
+                databaseName: config.GetSection("MongoDBSettings:DatabaseName").Value,
+                user: config.GetSection("MongoDBSettings:User").Value,
+                password: config.GetSection("MongoDBSettings:Password").Value,
+                host : config.GetSection("MongoDBSettings:Host").Value,
+                port: int.Parse(config.GetSection("MongoDBSettings:Port").Value)
+            );
 
-            services.AddSingleton<IMongoDBSettings>(sp =>
-                sp.GetRequiredService<IOptions<MongoDBSettings>>().Value);
+            services.AddSingleton<IMongoDBSettings, MongoDBSettings>();
             services.AddSingleton<IMongoClient>(s =>
                 new MongoClient(new MongoClientSettings()
                 {

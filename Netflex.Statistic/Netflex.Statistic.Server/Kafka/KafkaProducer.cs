@@ -21,6 +21,7 @@ namespace Netflex.Statistic.Server.Kafka
 
         public async Task<bool> Post(StatisticRequest orderRequest)
         {
+
             string message = JsonSerializer.Serialize(orderRequest);
             return await SendStatisticRequest(topic, message);
         }
@@ -36,6 +37,7 @@ namespace Netflex.Statistic.Server.Kafka
             {
                 using (var producer = new ProducerBuilder<Null, string>(config).Build())
                 {
+                    Console.WriteLine($" ----- > {message} FROM KafkaProducer");
                     var result = await producer.ProduceAsync
                     (topic, new Message<Null, string>
                     {
