@@ -167,7 +167,7 @@ services:
       - MongoDBSettings__Host=mongodb
       - MongoDBSettings__Port=27017
 
-      - Kafka__URL=localhost:9092
+      - Kafka__URL=broker:9092
     depends_on:
       - zookeeper
       - broker
