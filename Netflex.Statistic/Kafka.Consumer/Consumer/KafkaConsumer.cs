@@ -32,6 +32,8 @@ namespace Kafka.Consumer.Consumer
 
         public async Task StartAsync(CancellationToken cancellationToken)
         {
+            Console.WriteLine($"KafkaConsumer START!");
+
             var config = new ConsumerConfig
             {
                 GroupId = groupId,
@@ -43,6 +45,8 @@ namespace Kafka.Consumer.Consumer
             {
                 using (var consumerBuilder = new ConsumerBuilder<Ignore, string>(config).Build())
                 {
+                    Console.WriteLine($"KafkaConsumer BUILD!");
+
                     consumerBuilder.Subscribe(topic);
                     var cancelToken = new CancellationTokenSource();
 
@@ -80,12 +84,15 @@ namespace Kafka.Consumer.Consumer
                     }
                     catch (OperationCanceledException)
                     {
+                        Console.WriteLine($"KafkaConsumer ERROR 1!");
+
                         consumerBuilder.Close();
                     }
                 }
             }
             catch (Exception ex)
             {
+                Console.WriteLine($"KafkaConsumer ERROR 2!");
                 System.Diagnostics.Debug.WriteLine(ex.Message);
             }
 
