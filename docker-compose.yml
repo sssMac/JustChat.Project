@@ -170,10 +170,10 @@ services:
       - Kafka__URL=broker:9092
     depends_on:
       - zookeeper
-      - kafka
+      - broker
       - mongodb
     links: 
-     - kafka
+     - broker
 
   zookeeper:
     image: confluentinc/cp-zookeeper:7.3.2
