@@ -15,6 +15,7 @@ builder.Services.RegisterMongoDB(builder.Configuration);
 builder.Services.AddSingleton<IRabitMQProducer, RabitMQProducer>();
 builder.Services.AddSingleton<IKafkaProducer, KafkaProducer>();
 builder.Services.AddSingleton<IHostedService, KafkaConsumer>();
+builder.Services.AddCors();
 var app = builder.Build();
 
 // Configure the HTTP request pipeline.
@@ -23,7 +24,11 @@ if (app.Environment.IsDevelopment())
     app.UseSwagger();
     app.UseSwaggerUI();
 }
-
+app.UseCors(x => x
+                .AllowAnyMethod()
+                .AllowAnyHeader()
+                .SetIsOriginAllowed(origin => true)
+                .AllowCredentials());
 app.UseHttpsRedirection();
 
 app.UseAuthorization();

@@ -17,7 +17,7 @@ namespace Kafka.Consumer.Consumer
     {
         private readonly string topic = "statistics";
         private readonly string groupId = "statistics_group";
-        private readonly string bootstrapServers = "localhost:90092";
+        private readonly string bootstrapServers = "localhost:9093";
         private IMongoCollection<Statistic> _statistics;
 
         public KafkaConsumer(IMongoDBSettings mongoDBSettings, IMongoClient mongoClient)
