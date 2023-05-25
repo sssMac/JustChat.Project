@@ -15,6 +15,7 @@ builder.Services.RegisterMongoDB(builder.Configuration);
 builder.Services.AddSingleton<IRabitMQProducer, RabitMQProducer>();
 builder.Services.AddSingleton<IKafkaProducer, KafkaProducer>();
 builder.Services.AddSingleton<IHostedService, KafkaConsumer>();
+builder.Services.AddSingleton<IHostedService, KafkaProducer>();
 builder.Services.AddCors();
 var app = builder.Build();
 
